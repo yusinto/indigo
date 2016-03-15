@@ -10,6 +10,8 @@ var gulp        = require('gulp'),
 	rupture     = require('rupture'),
 	prefixer    = require('autoprefixer-stylus'),
     nib         = require('nib'),
+    postcss     = require('gulp-postcss'),
+    sourcemaps  = require('gulp-sourcemaps'),
 
     // images
     imagemin    = require('gulp-imagemin');
@@ -36,17 +38,27 @@ gulp.task('browserSync', ['jekyll-build'], function() {
 });
 
 gulp.task('styles', function() {
-    return gulp.src('src/styles/main.styl')
-        .pipe(changed('assets/styles'))
-        .pipe(plumber())
-        .pipe(stylus({
-            use:[prefixer(), rupture(), nib()],
-			compress: false
-        }))
-        .pipe(gulp.dest('_site/assets/styles'))
-        .pipe(gulp.dest('_includes'))
-        .pipe(browserSync.reload({stream: true}))
-        .pipe(gulp.dest('assets/styles'));
+    .pipe(changed('assets/styles'))
+    .pipe(plumber())
+
+    .pipe(stylus({
+      use: [
+        poststylus([
+            // 'clean',
+            'autoprefixer',
+        ])
+      ]
+    }))
+
+    // .pipe(stylus({
+    //     use:[prefixer(), rupture(), nib()],
+	// 	compress: false
+    // }))
+
+    .pipe(gulp.dest('_site/assets/styles'))
+    .pipe(gulp.dest('_includes'))
+    .pipe(browserSync.reload({stream: true}))
+    .pipe(gulp.dest('assets/styles'));
 });
 
 gulp.task('imagemin', function(tmp) {
