@@ -1,4 +1,5 @@
 ---
+published: true
 title: "Step 1 to React: Using es6 with Express"
 layout: post
 date: 2016-03-27 17:48
