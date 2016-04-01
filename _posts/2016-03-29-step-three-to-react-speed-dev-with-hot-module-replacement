@@ -21,17 +21,26 @@ changes to your code, they simply appear in the browser like magic without a ref
 
 Let's dive straight into the code now and I'll explain things along the way.
 
-1. npm install --save-dev babel-plugin-react-transform react-transform-hmr webpack-hot-middleware webpack-dev-middleware
-2. add add plugins to webpack.config
- // Required by webpack-hot-middleware https://www.npmjs.com/package/webpack-hot-middleware
+1. npm install --save-dev babel-plugin-react-transform react-transform-hmr react-transform-catch-errors redbox-react webpack-hot-middleware webpack-dev-middleware
+redbox-react displays errors in the browser in addition to in the console
+
+2. Changes to webpack.config.dev.js
+ - add entry: ['webpack-hot-middleware/client', './src/client/index'],
+ - add output.publicPath: '/dist'
+ - add plugins to webpack.config
     plugins: [
-        new webpack.optimize.OccurenceOrderPlugin(),
-        new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoErrorsPlugin()
+        new webpack.HotModuleReplacementPlugin()
     ]
-3. Delete prestart, modify server.js to bundle on the fly:
-app.use(WebpackDevMiddleware(webpackCompiler));
-app.use(WebPackHotMiddleware(webpackCompiler));
+
+3. Changes to .babelrc - add plugins for react-transform
+4. Delete prestart in package.json, delete dist folder
+5. Changes to server.js:
+- app.use(WebpackDevMiddleware(webpackCompiler, {
+    publicPath: WebpackConfig.output.publicPath,
+    noInfo: true
+}));
+- app.use(WebPackHotMiddleware(webpackCompiler));
+- delete static middleware for dist
 
 ---
 
