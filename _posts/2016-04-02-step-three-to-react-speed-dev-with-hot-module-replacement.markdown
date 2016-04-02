@@ -5,6 +5,10 @@ layout: post
 date: 2016-04-2 17:45
 tag:
 - react
+- hmr
+- hot
+- module
+- replacement
 - webpack
 - babel
 blog: true
