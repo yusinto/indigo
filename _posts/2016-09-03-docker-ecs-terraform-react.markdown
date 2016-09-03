@@ -78,7 +78,7 @@ MAINTAINER Yus Ng
 
 # Store all our app code in the /src folder, starting from package.json
 # first. Why copy package.json first? So we can take advantage of 
-# the docker build cache. See detailed explanation below.
+# the docker build cache. More below.
 COPY package.json /src/package.json
 
 # Once we have package.json, do npm install (restricting the loglevel
@@ -86,45 +86,30 @@ COPY package.json /src/package.json
 RUN cd /src && npm install --loglevel error
 
 # Copy all our code (yes including package.json again) to /src. 
-# Why can't we just do this and then npm install after this step?  
-# Why do we need the two steps above?? Be patient young skywalker, see 
-# explanation below regarding docker build cache.
 COPY . /src
 
 # Change directory into the /src folder so we can execute npm commands
 WORKDIR /src
 
-# Produce the bundled.js and css files.
-RUN npm run build
-
 # This is the express port on which our app runs
 EXPOSE 3000
 
-# Set entrypoint to be executable
-RUN npm start
+# This is the default command to execute when docker run is issued. Only
+# one CMD instruction is allowed per Dockerfile.
+CMD npm start
 {% endhighlight %}
 
 <b>Important points</b>: 
 <ul>
-<li>The first argument to the COPY instruction in the Dockerfile is relative to the current local directory you are in.</li>
-<li>For example the instruction "COPY package.json /src/package.json" looks for package.json in your current local directory 
-and then copies it to the /src directory in the image.
-</li>
-<li><b>Docker build cache explanation</b> - Docker has a cache to optimise and speed up image builds. Each instruction in the dockerfile is checked against previous images' instructions
-to see if there was one built using the exact same instruction. This check is a string comparison and the cache contains the output of the instruction. 
-The cache will only be used if the instructions are exactly the same string.</li>
-<li>This is very efficient and helps speed up the image build process. However for a command like "COPY package.json /src/package.json" clearly a simple
-string check is insufficient because the contents of our package.json might have changed. If a cache copy is used from a previous image that has
-a package.json with different dependencies then our image will contain extraneous/missing packages. Docker deals with this by making ADD and COPY
-instructions special.</li> 
-<li>Instead of a simple string comparison, a checksum is calculated for each file in the ADD/COPY instruction. This checksum is used
-to compare the new files and the old files. If the checksum is different i.e. something has changed in the file, then the cache is invalidated. Once
-the cache is invalidated, subsequent commands will generate new images and ignore the cache.
-</li>
-<li>
-With this knowledge, if we were to just do "COPY . /src" and then npm install, it's highly likely that the cache will get invalidated because of code file changes rather 
- than "real" package.json changes. It is therefore prudent and highly recommended that you always copy package.json first, and then npm install so you can utilise the cache.
-</li>
+<li>Each instruction creates a new intermediate layer.</li>
+<li>Docker uses the instruction string as the cache key. The result of that instruction is a new layer which gets stored as the cache value.</li>
+<li>ADD and COPY instructions are special. The cache key for these are the checksum of their file contents.</li>
+<li>If your package.json file does not change, the cache will be hit because the checksum matches. The next instruction npm install will also hit the cache 
+because docker uses the instruction string as key which has not changed.</li>
+<li>In contrast, consider what will happen if do COPY . /src and then followed by RUN npm install.</li>
+<li>The COPY command does a checksum of all the files in current directory and compares that against previous layers. Some files
+would have changed in the src folder, because it contains all our source code, images, config files, styles, etc. The checksum comparison would not match, hence
+the cache will be invalidated. Once invalidated, all subsequent instructions will create new layers ignoring the cache.</li>
 </ul>
 
 For more information on docker build cache check the official doco [here](https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/){:target="_blank"}.
@@ -140,9 +125,10 @@ Docker will exclude files and directories specified here from the image. It shou
 .git
 .gitignore
 node_modules
+npm-debug.log
 {% endhighlight %}
 
-## Step 4: Build the image
+## Step 4: Build the docker image
 
 Let's do it! Go to terminal, cd into your root project folder where your Dockerfile resides and type the following (<b>NOTE</b> the "." at the end
 is very important!): 
@@ -151,25 +137,50 @@ is very important!):
 docker build -t reactjunkie:v1 .
 {% endhighlight %}
 
-Docker will build an image named "reactjunkie:v1" using the Dockerfile specified in the current directory (represented by the "." at the end).
+Docker will build an image named "reactjunkie:v1" using the Dockerfile specified in the current directory (represented by the "." at the end). You can see it
+by issuing the command:
 
-## Step 5: Start the app
+{% highlight bash %}
+docker images
+{% endhighlight %}
+
+You should see two images; the latest node base image which gets downloaded when docker built our image and our reactjunkie:v1 image.
+
+## Step 5: Run the docker container
 
 Now we have an image, we can start a container based on that image and run our app!
 
 {% highlight bash %}
-docker run -d -p 3033:3033 reactjunkie:v1
+docker run -d -p 8080:3000 reactjunkie:v1
 {% endhighlight %}
 
-## Step 6: Add entrypoints for lint, test and run
+This command tells docker to run the default CMD command specified in the last line of our Dockerfile above. As we will see shortly we can
+override this default by issuing our own commands.
+
+<p>The -d flag tells docker to detach from the container process after issuing the command so we regain control of our terminal window.</p>
+The -p flag maps the port on your mac (the host) to the container port.
+Hit [http://localhost:8080](http://localhost:8080){:target="_blank"} and you should be able to see the app running!
+
+## Step 6: Running lint and test
+
+I've setup eslint in this project which you can download in [github](https://github.com/yusinto/docker){:target="_blank"}. As mentioned
+in the previous step, we should be able to issue a command to our running container to override the default CMD instruction. So let's do that:
+
+{% highlight bash %}
+docker run -i --rm reactjunkie:v1 npm run lint
+{% endhighlight %}
+
+<p>The -i flag tells docker to run in "interactive" mode so we can see eslint console output from the container.</p>
+<p>The --rm flag tells docker to automatically clean up the container and remove its file system when the it exits.</p>
+<p>Then npm run lint is the command that overrides the default CMD instruction in our Dockerfile. When you run the command you should be able to see
+that eslint has run successfully. You can use the exact same technique to execute npm test to run tests. I haven't included tests in this project so 
+I'll skip that for now.</p>
 
 ## Step 7: Push image to ecs
+So now we have our image on our local machine, we need a way to export it to a central place so it can be shared with other developers, build systems and so on.
+Docker has dockerhub which does exactly that, but in this example we'll use ECR which is aws' offering.
 
-
-
-####Lill: Standard es6 class method
-{% highlight c# %}
-{% endhighlight %}
+To be continued...
 
 ## What's next?
 I'll be attending [NDC Sydney](http://ndcsydney.com/){:target="_blank"} on 3-5 August. If you are around, please say hello otherwise
