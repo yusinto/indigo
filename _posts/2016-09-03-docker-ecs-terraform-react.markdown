@@ -101,8 +101,7 @@ RUN npm run build
 EXPOSE 3000
 
 # Set entrypoint to be executable
-RUN chmod 755 /src/dockerEntryPoint.sh
-ENTRYPOINT ["/src/dockerEntryPoint.sh"]
+RUN npm start
 {% endhighlight %}
 
 <b>Important points</b>: 
@@ -116,13 +115,15 @@ to see if there was one built using the exact same instruction. This check is a 
 The cache will only be used if the instructions are exactly the same string.</li>
 <li>This is very efficient and helps speed up the image build process. However for a command like "COPY package.json /src/package.json" clearly a simple
 string check is insufficient because the contents of our package.json might have changed. If a cache copy is used from a previous image that has
-a package.json with different dependencies then our build will contain extraneous/missing packages. Docker deals with this by making ADD and COPY
-instructions special. Instead of a simple string comparison, a checksum is calculated for each file in the ADD/COPY instruction. This checksum is used
+a package.json with different dependencies then our image will contain extraneous/missing packages. Docker deals with this by making ADD and COPY
+instructions special.</li> 
+<li>Instead of a simple string comparison, a checksum is calculated for each file in the ADD/COPY instruction. This checksum is used
 to compare the new files and the old files. If the checksum is different i.e. something has changed in the file, then the cache is invalidated. Once
 the cache is invalidated, subsequent commands will generate new images and ignore the cache.
 </li>
 <li>
-It is therefore prudent and highly recommended that you always copy package.json first, and then npm install so you can utilise the cache.
+With this knowledge, if we were to just do "COPY . /src" and then npm install, it's highly likely that the cache will get invalidated because of code file changes rather 
+ than "real" package.json changes. It is therefore prudent and highly recommended that you always copy package.json first, and then npm install so you can utilise the cache.
 </li>
 </ul>
 
@@ -151,6 +152,20 @@ docker build -t reactjunkie:v1 .
 {% endhighlight %}
 
 Docker will build an image named "reactjunkie:v1" using the Dockerfile specified in the current directory (represented by the "." at the end).
+
+## Step 5: Start the app
+
+Now we have an image, we can start a container based on that image and run our app!
+
+{% highlight bash %}
+docker run -d -p 3033:3033 reactjunkie:v1
+{% endhighlight %}
+
+## Step 6: Add entrypoints for lint, test and run
+
+## Step 7: Push image to ecs
+
+
 
 ####Lill: Standard es6 class method
 {% highlight c# %}
