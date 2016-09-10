@@ -1,19 +1,20 @@
 ---
 published: true
-title: "Deploying react apps on docker using ecs and terraform part 1"
+title: "Implementing feature toggle with launch darkly and redux"
 layout: post
-date: 2016-09-03 10:52
+date: 2016-09-09 10:52
 tag:
 - react
-- docker
-- ecs
-- terraform
-- deploy
-- continuous
-- integration
-- deployment
+- redux
+- feature
+- toggle
+- launch
+- darkly
+- toggling
 blog: true
 ---
+
+
 
 I was tinkering on blogging about Step 5 to React: Introduction to Redux, but I decided to write something closer to my heart: 
 using ecs and terraform to deploy docker react apps (can I squeeze in anymore buzzwords?). This is not an intro to docker so 
