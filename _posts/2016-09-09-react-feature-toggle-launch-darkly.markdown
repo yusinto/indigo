@@ -1,6 +1,6 @@
 ---
 published: true
-title: "Implementing feature toggle with launch darkly and redux"
+title: "Implementing feature toggle with launch darkly and react redux"
 layout: post
 date: 2016-09-09 10:52
 tag:
@@ -14,31 +14,153 @@ tag:
 blog: true
 ---
 
+I first heard the term feature toggle from someone I interviewed when we were talking about continuous deployment (deploying to prod at anytime, continuously).
+I didn't really think much of it at first, thinking that it's just a trivial bunch of if-else flags that I have to maintain
+manually. I couldn't be more wrong.
 
+Maintaining feature flags in your codebase can become messy very quickly. On top of that you need to build targeting and analytics tools that 
+the business would (eventually) want. I soon realise that feature toggle is a distinct and separate supporting domain of my core domain. Much like identity and
+access management. So is there anything out there we can use to integrate with our core domain?
 
-I was tinkering on blogging about Step 5 to React: Introduction to Redux, but I decided to write something closer to my heart: 
-using ecs and terraform to deploy docker react apps (can I squeeze in anymore buzzwords?). This is not an intro to docker so 
-I assume you are familiar with the basics. 
- 
-My plan was to use docker to achieve continuous integration and ultimately continuous delivery and then deployment. But I like to
-start things small so the plan was to firstly create a docker image on every master merge and save that image. 
+Enter Launch Darkly. I met Edith Harbaugh the CEO of Launch Darkly at NDC Sydney 2016. She was kind enough to give a demo of launch darkly in situ and I was blown away.
+Launch darkly stores feature flags only without coupling to the UI, so it works with React or any modern javascript framework with virtual dom reconciliation. 
+The sdk supports almost every imaginable platform, but most importantly it's on npm [ldclient-js](https://www.npmjs.com/package/ldclient-js){:target="_blank"} and 
+open source on [github](https://github.com/launchdarkly/js-client){:target="_blank"}. 
 
-This image
-is a stable and deployable package which can be deployed and run on any environment. This is the "golden" build concept - a single build
-that is used on all steps of the deployment pipeline: uat, stage and prod. This is a good practice to adopt because the exact same 
-build that has gone through all the QA steps is the one that's going out to production. 
-
-It gives you confidence the prod deployment at the end
-will work as expected. This is only possible if the package that comes out of your CI build is immutable - that's where docker comes in. I don't 
-know about you but I get really turned on by this kind of stuff! Let's get to it!
+In this blog I will walk through step by step how to integrate launch darkly feature toggles with your react react-router redux app.
+Note that this blog assumes prior working knowledge of redux and redux-thunk.
  
 ## The end game
-By the end of this blog, we want to be able to create a docker image containing our react app, be able to run lint, tests and the actual app
-on that image.
+By the end of this blog, we will have a feature-flag driven react redux app using Launch Darkly as our feature toggle provider.
 
-We will be using the codebase from my [previous blog on react router](http://www.reactjunkie.com/step-four-to-react-routing-with-react-router/){:target="_blank"}. It's 
-a minimal react spa with routing, you should be able to easily substitute your own codebase and follow the steps here to use docker.
+## Step 1: Configure launch darkly dashboard
 
+[insert video link]
+
+## Step 2: Install ldclient-js
+{% highlight bash %}
+npm i ldclient-js --save
+{% endhighlight %}
+
+## Step 3: Create redux action to instantiate ldclient
+We need to create an instance of ldclient in order to communicate with launch darkly from our app. This instantiation
+should be done once at the start of the app, and the resultant client object stored in redux state to be 
+re-used throughout the app. 
+
+We'll go ahead and create the action and reducer to perform this instantiation.
+
+####appAction.js
+{% highlight c# %}
+import ldClient from 'ldclient-js';
+
+export const initialiseLD = () => {
+  // use redux-thunk for async action
+  return dispatch => {
+    /**
+     * Launch darkly provides a comprehensive suite of targeting and
+     * rollout options. Targeting and rollouts are based on the user
+     * viewing the page, so we must pass a user at initialisation time.
+     *
+     * The user object can contain these properties:
+     * key, ip, firstName, lastName, country, email, avatar, name,
+     * anonymous.
+     *
+     * The only mandatory property is "key". All the others are
+     * optional. You can also specify custom properties using the
+     * "custom" property name like company and authorOf properties below.
+     *
+     * For more info on users, check here:
+     * http://docs.launchdarkly.com/docs/js-sdk-reference#users
+    */
+    const user = {
+      "key": "deadbeef", // MANDATORY!
+      "firstName": "John",
+      "lastName": "Carmack",
+      "email": "jcarmack@doom.com",
+
+      // specify custom properties here. These will appear
+      // automatically on the dashboard.
+      "custom": {
+        "company": "ID Software",
+        "authorOf": ["doom", "quake"]
+      }
+    };
+
+    // Actual work done here. You'll need to use your environment id as
+    // configured in your dashboard
+    const client = ldClient.initialize('YOUR-ENVIRONMENT-ID', user);
+
+    // The client will emit an "ready" event when it has finished
+    // initialising. At that point we want to store that client
+    // object in our redux state. Do this by dispatching an action
+    // with the client object as the argument to be stored in app state.
+    client.on('ready', () => {
+      dispatch(setLDReady(client));
+    });
+  };
+};
+
+// Stores launch darkly client object in app state
+export const setLDReady = ldClient => {
+  return {
+    type: Constants.LD_READY,
+    data: ldClient
+  }
+};
+{% endhighlight %}
+
+####appReducer.js
+{% highlight c# %}
+import Constants from './common/constant';
+
+const defaultState = {
+  isLDReady: false,
+  ldClient: null,
+};
+
+export default function App(state = defaultState, action) {
+  switch (action.type) {
+    case Constants.LD_READY:
+      return Object.assign({}, state, {isLDReady: true, ldClient: action.data});
+
+    default:
+      return state;
+  }
+}
+{% endhighlight %}
+
+## Step 4: Call initialiseLD from the root component
+We want to initialise the client just once at the start of the app. The
+best place to do this is at the root component's componentDidMount. 
+
+I'll skip the appContainer snippet to keep things short.
+
+####appComponent.js
+{% highlight c# %}
+import React, {Component} from 'react';
+
+export default class App extends Component {
+  componentDidMount() {
+    // This will trigger ldclient initialisation
+    this.props.initialiseLD();
+  }
+
+  render() {
+    ...
+  }
+}
+{% endhighlight %}
+
+## Step 3. Fetch feature flags
+So now we have the client initialised, we can fetch our flags! We do 
+this by invoking the "variation" method on the ldclient object.
+
+
+## Step 4: Use feature flags
+
+## Step 5: Subscribe to feature flag changes
+  
+ 
 ## Step 1: Install docker
 I'm on a mac so download docker for mac from [here](https://download.docker.com/mac/stable/Docker.dmg). It's a 110mb download so stop reading and do it first, continue reading later.
 There are some hardware & os requirements. The important ones are:
