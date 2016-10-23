@@ -13,6 +13,11 @@ tag:
 - toggling
 blog: true
 ---
+###_Update: 22 October 2016_
+_I have published an npm package called [ld-redux](https://github.com/yusinto/ld-redux){:target="_blank"} which covers everything you need to integrate launch darkly with your react 
+redux app. It's the contents of this blog in an npm package. If you use it, please give me some feedback. Thanks!_ 
+
+---
 
 I first heard the term feature toggle from someone I interviewed when we were talking about continuous deployment (deploying to prod at anytime, continuously).
 I didn't really think much of it at first, thinking that it's just a trivial bunch of if-else flags that I have to maintain
