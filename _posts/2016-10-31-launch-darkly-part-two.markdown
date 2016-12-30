@@ -126,10 +126,10 @@ You can see the complete logic for default user creation [here](https://github.c
 The custom property allows you to pass any arbitrary properties to Launch Darkly which you can use for targeting. This is very useful and powerful.
 
 ## Conclusion
-Feature flagging coupled with user targeting is a powerful way to control the target audience of your app's functionality. This opens up a whole
-new world of possibilities in regards to you can do with your app. Someday all apps will be built this way.
+Feature flagging coupled with user targeting is a powerful way to control your target audience. This opens up a whole
+new world of possibilities in regards to what you can do with your app. Someday all apps will be built this way.
 
 
-Check out [ld-redux](https://github.com/yusinto/ld-redux){:target="_blank"} if you haven't, and please give me some feedback if you use it!
+Check out [ld-redux](https://github.com/yusinto/ld-redux){:target="_blank"} if you haven't, and please give me some feedback if you use it! Thanks.
 
 ---------------------------------------------------------------------------------------
