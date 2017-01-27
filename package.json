@@ -27,5 +27,8 @@
   "scripts": {
     "build": "bundle exec jekyll build",
     "test": "bundle exec htmlproof ./_site"
+  },
+  "dependencies": {
+    "flow-bin": "^0.37.4"
   }
 }
