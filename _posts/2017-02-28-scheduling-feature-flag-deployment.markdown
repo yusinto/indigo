@@ -16,6 +16,8 @@ tag:
 blog: true
 ---
 
+#### Updated Wed 8 March 2017
+
 Use Launch Darkly? Love their feature flagging and a/b testing features? Like reading blog posts that sounds like an informercial? Umm...
 
 Anyway I use Launch Darkly at my workplace (I work at an airline company spelt with a Q and I live in Sydney Australia) and I recently faced a
@@ -90,13 +92,20 @@ ldScheduler.runEveryXSeconds({
 
 and you schedule your flags through launch darkly's dashboard:
 
-![LaunchDarkly dashboard scheduling config](/assets/images/ld_flag_configuration.png)
+![LaunchDarkly dashboard scheduling config](/assets/images/ld-scheduler-flag-settings-resized.png)
 
 **HACK**: We hijack the description field to store our scheduling config as a json object where:
 <ul>
     <li>taskType is killSwitch</li>
     <li>value is true (kill switch on) or false (kill switch off)</li>
-    <li>targetDeploymentDateTime must be in the format of YYYY-MM-DD HH:mm</li>
+    <li>
+        targetDeploymentDateTime must be in YYYY-MM-DD HH:mm Z
+        <p>
+            <b>NOTE:</b> the UTC offset at the end is especially important because ld-scheduler uses moment which will use the host's timezone if it is not specified.
+             That means if you deploy ld-scheduler to the cloud say on aws lambda where the machine clock is set to UTC timezone, then your flag will be deployed at
+             UTC time, which is probably not what you want unless you are living in London!
+        </p>
+    </li>
     <li>description is a textual string for the purpose of human readability</li>
 </ul>
 
