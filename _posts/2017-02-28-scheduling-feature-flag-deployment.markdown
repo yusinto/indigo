@@ -16,7 +16,7 @@ tag:
 blog: true
 ---
 
-#### Updated Wed 8 March 2017
+#### Updated Mon 13 March 2017
 
 Use Launch Darkly? Love their feature flagging and a/b testing features? Like reading blog posts that sounds like an informercial? Umm...
 
@@ -109,10 +109,14 @@ and you schedule your flags through launch darkly's dashboard:
     <li>description is a textual string for the purpose of human readability</li>
 </ul>
 
-***AND*** you need to set a tag called "scheduled".
+***AND*** you need to set a tag called "${yourEnv}-scheduled". For example, if you are scheduling a flag in the test environment,
+your tag should be called "test-scheduled". Likewise if you are scheduling it in production, you need to add a "production-scheduled" tag.
 
-When ld-scheduler runs, it will set your flag on/off according the the json configuration. It will also remove the "scheduled" tag and set the "Description" of the flag
-to the json.description string, thereby deleting the json config replacing it with the description string. 
+When ld-scheduler runs, it will set your flag on/off according the the json configuration. It will also remove the "${yourEnv}-scheduled" tag so
+it does not get reprocessed. If there's no other scheduled tags, then ld-scheduler also sets the "Description" field
+to the json.description string, thereby deleting the json config replacing it with the description string.
+
+This way, you can safely run 2 instances of ld-scheduler; one for each environment without having to worry about race conditions.
 
 ## Extra
 ld-scheduler supports a second taskType "fallThoughRollout" which you can use to set the default fallThrough rollout percentage:
@@ -136,7 +140,7 @@ ld-scheduler supports a second taskType "fallThoughRollout" which you can use to
 {% endhighlight %}
 where variation 0 is true and variation 1 is false. Weight is in mili-percentage (if there's such a word) i.e. 90000 === 90% and 10000 === 10%.
 Of course you would enter this json object in the "Description" field of your flag settings in launch darkly's dashboard
-***AND*** set a "scheduled" tag.
+***AND*** set a "${yourEnv}-scheduled" tag.
 
 ## Conclusion
 Check out the [sample code](https://github.com/yusinto/ld-scheduler/tree/master/example){:target="_blank"} for a working example and let me know if this is useful (or not)!
