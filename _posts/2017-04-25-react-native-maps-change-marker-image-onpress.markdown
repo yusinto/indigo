@@ -21,18 +21,42 @@ so fortunate to be a javascript developer at this present moment because of awes
 at our disposal. The possibilities are truly endless.
 
 Airbnb has open sourced [react-native-maps](https://github.com/airbnb/react-native-maps){:target="_blank"} which 
-made it so easy to integrate mapping capabilities to your app. There are steps to follow to set it all up but 
-it's easy enough to follow.
+made it so easy to integrate mapping capabilities with your app. There are steps to follow to set it all up but 
+it's not that hard.
 
 ## The problem
-Need to display custom map markers with on MapView. OnPress of a marker, change the image of that selected marker so 
-the user can see that it has been selected.
+Need to display custom map markers on react-native-maps. Then, onPress of a 
+marker, change that marker image so the user can see it has 
+been selected. The problem is there is no direct way to get the ref of 
+the selected marker. Even if there is, there is no setImage method to
+change the marker image.
 
 ## The solution
+Out of the box, there's already an onPress event handler with MapView.Marker
+which is a good starting point. We will use this along with the ref and 
+image props (also supported out of the box) to solve our problem.
 
+## Are you done talking? Show me some code!
+So first things first, you need to install and link react-native-maps:
 
-## Enough talk, show me some code
-Using the rest apis, you can update your flag with something  like this:
+{% highlight js %}
+// stick with 0.13.0 to avoid unresolved issues in ^0.14.0
+yarn add react-native-maps@0.13.0
+{% endhighlight %}
+
+{% highlight js %}
+react-native link react-native-maps
+{% endhighlight %}
+
+GOTCHA: the latest react-native-maps require babel-plugin-module-resolver as well
+otherwise you'll get this error: Unknown plugin module-resolver
+
+So do this:
+{% highlight js %}
+yarn add babel-plugin-module-resolver
+{% endhighlight %}
+
+Then we can write some code to render a basic map like this:
 
 {% highlight javascript %}
 const headers = {
