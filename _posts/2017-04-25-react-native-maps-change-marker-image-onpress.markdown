@@ -24,6 +24,8 @@ Airbnb has open sourced [react-native-maps](https://github.com/airbnb/react-nati
 made it so easy to integrate mapping capabilities with your app. There are steps to follow to set it all up but 
 it's not that hard.
 
+All the code in this blog are available on [github](https://github.com/yusinto/react-native-map-markers){:target="_blank"}.
+
 ## The problem
 Need to display custom map markers on react-native-maps. Then, onPress of a 
 marker, change that marker image so the user can see it has 
@@ -39,130 +41,207 @@ image props (also supported out of the box) to solve our problem.
 ## Are you done talking? Show me some code!
 So first things first, you need to install and link react-native-maps:
 
-{% highlight js %}
-// stick with 0.13.0 to avoid unresolved issues in ^0.14.0
+{% highlight shell %}
+# stick with 0.13.0 to avoid unresolved issues in ^0.14.0
 yarn add react-native-maps@0.13.0
 {% endhighlight %}
-
-{% highlight js %}
+then link it
+{% highlight shell %}
 react-native link react-native-maps
 {% endhighlight %}
 
-GOTCHA: the latest react-native-maps require babel-plugin-module-resolver as well
-otherwise you'll get this error: Unknown plugin module-resolver
+<b>GOTCHA</b> react-native-maps requires babel-plugin-module-resolver as well
+otherwise you'll get this error: Unknown plugin module-resolver. This is a bug
+which should be fixed in a later version.
 
-So do this:
-{% highlight js %}
+{% highlight shell %}
 yarn add babel-plugin-module-resolver
 {% endhighlight %}
 
 Then we can write some code to render a basic map like this:
 
 {% highlight javascript %}
-const headers = {
-  Accept: '*/*',
-  'Content-Type': 'application/json',
-  Authorization: 'your-api-key',
-  'accept-encoding': 'gzip, deflate'
-};
-const body = JSON.stringify([{
-  op: 'replace',
-  path: '/environments/test';,
-  value: true,
-}]);
-const url = 'https://app.launchdarkly.com/api/v2/flags/default/your-key';
-const response = await fetch(url, {
-    method: 'PATCH',
-    headers,
-    body
-});
+import React, { Component } from 'react';
+import {AppRegistry, StyleSheet, View} from 'react-native';
+import MapView from 'react-native-maps';
 
-{% endhighlight %}
+export default class MapMarkers extends Component {
+  state = {
+    region: {
+      latitude: 1,
+      longitude: 1,
+      latitudeDelta: 0.0043, // hardcode zoom levels just for example
+      longitudeDelta: 0.0034,
+    },
+  };
 
-Of course you'll need to add some defensive programming for error catching
-and retries plus configuration for test and production environments
-plus notifications when updates are successful/not successful, and the
-list goes on.
- 
-If you go down this path, you soon realise that this is not a trivial 
-task by any means. An ad-hoc solution like this involves hard coding
-flag names and continual updates which are almost as bad as waking up at 
-12:01 AM to do the deployments manually.
-
-Enter [ld-scheduler](https://github.com/yusinto/ld-scheduler){:target="_blank"}.
-
-## ld-scheduler
-With ld-scheduler, you do this from your node app:
-
-{% highlight js %}
-yarn add ld-scheduler
-{% endhighlight %}
-
-then
-
-{% highlight javascript %}
-import ldScheduler from 'ld-scheduler';
-
-ldScheduler.runEveryXSeconds({
-  environment: 'test',
-  apiKey: 'your-secret-api-key',
-  slack: 'your-slack-webhook-url'
-});
-{% endhighlight %}
-
-and you schedule your flags through launch darkly's dashboard:
-
-![LaunchDarkly dashboard scheduling config](/assets/images/ld-scheduler-flag-settings-resized.png)
-
-**HACK**: We hijack the description field to store our scheduling config as a json object where:
-<ul>
-    <li>taskType is killSwitch</li>
-    <li>value is true (kill switch on) or false (kill switch off)</li>
-    <li>
-        targetDeploymentDateTime must be in YYYY-MM-DD HH:mm Z
-        <p>
-            <b>NOTE:</b> the UTC offset at the end is especially important because ld-scheduler uses moment which will use the host's timezone if it is not specified.
-             That means if you deploy ld-scheduler to the cloud say on aws lambda where the machine clock is set to UTC timezone, then your flag will be deployed at
-             UTC time, which is probably not what you want unless you are living in London!
-        </p>
-    </li>
-    <li>description is a textual string for the purpose of human readability</li>
-</ul>
-
-***AND*** you need to set a tag called "${yourEnv}-scheduled". For example, if you are scheduling a flag in the test environment,
-your tag should be called "test-scheduled". Likewise if you are scheduling it in production, you need to add a "production-scheduled" tag.
-
-When ld-scheduler runs, it will set your flag on/off according the the json configuration. It will also remove the "${yourEnv}-scheduled" tag so
-it does not get reprocessed. If there's no other scheduled tags, then ld-scheduler also sets the "Description" field
-to the json.description string, thereby deleting the json config replacing it with the description string.
-
-This way, you can safely run 2 instances of ld-scheduler; one for each environment without having to worry about race conditions.
-
-## Extra
-ld-scheduler supports a second taskType "fallThoughRollout" which you can use to set the default fallThrough rollout percentage:
-
-{% highlight json %}
-{
-    "taskType": "fallThroughRollout",
-    "targetDeploymentDateTime": "2017-03-3 02:33",
-    "description": "Human readable flag description",
-    "value": [
-        {
-            "variation": 0,
-            "weight": 90000
-        },
-        {
-            "variation": 1,
-            "weight": 10000
+  componentDidMount() {
+    navigator.geolocation.getCurrentPosition(
+      position => this.setState({
+        region: {
+          ...this.state.region,
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
         }
-    ]
+      }),
+      error => alert(JSON.stringify(error)), {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 1000
+      }
+    );
+  }
+
+  // note that you need to style the map, otherwise you'll get
+  // a blank screen
+  render() {
+    return (
+      <View style={styles.root}>
+        <MapView style={styles.map}
+                 showsUserLocation={true}
+                 followsUserLocation={true}
+                 initialRegion={this.state.region}
+        />
+      </View>
+    );
+  }
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  map: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+});
+
+AppRegistry.registerComponent('mapMarkers', () => MapMarkers);
+
 {% endhighlight %}
-where variation 0 is true and variation 1 is false. Weight is in mili-percentage (if there's such a word) i.e. 90000 === 90% and 10000 === 10%.
-Of course you would enter this json object in the "Description" field of your flag settings in launch darkly's dashboard
-***AND*** set a "${yourEnv}-scheduled" tag.
+
+## iOS Simulator Setup
+Before you run this in the simulator, you'll need to set a custom location
+in the ios simulator. We'll only be demoing on ios only for this blog.
+
+![Simulator Location Menu](/assets/images/simulator_location_menu.png)
+
+Set the custom location to Cafe Sydney -33.861924, 151.210891. If you haven't
+been, you have to! It's an awesome restaurant!
+
+![Set Custom Location](/assets/images/custom_location.png)
+
+## Run the project
+
+{% highlight shell %}
+react-native run-ios
+{% endhighlight %}
+
+You should see a map view with the user location set to Cafe Sydney in Australia.
+Now let's add a few markers.
+
+{% highlight js%}
+// Add these at the top of the file, straight after the imports
+const RESTAURANTS = [
+  {
+    key: 'Cafe Sydney',
+    title: 'Cafe Sydney',
+    description: 'Customs House, 31 Alfred St, Sydney NSW 2000',
+    latLong: {
+      latitude: -33.861924,
+      longitude: 151.210891,
+    },
+  },
+  {
+    key: 'Four Frogs Creperie',
+    title: 'Four Frogs Creperie',
+    description: '1 Macquarie Pl, Sydney NSW 2000',
+    latLong: {
+      latitude: -33.861755,
+      longitude: 151.209941,
+    },
+  },
+  {
+    key: 'Tapavino',
+    title: 'Tapavino',
+    description: '6 Bulletin Pl, Sydney NSW 2000',
+    latLong: {
+      latitude: -33.862512,
+      longitude: 151.209490,
+    },
+  },
+];
+
+  // then modify your render method to look like this
+  render() {
+    return (
+      <View style={styles.root}>
+        <MapView style={styles.map}
+                 showsUserLocation={true}
+                 followsUserLocation={true}
+                 initialRegion={this.state.region}
+        >
+          {
+            RESTAURANTS.map((m, i) =>
+              <MapView.Marker
+                coordinate={m.latLong}
+                title={m.title}
+                description={m.description}
+                key={`marker-${i}`}
+              />
+            )
+          }
+        </MapView>
+      </View>
+    );
+  }
+{% endhighlight %}
+
+You should see 3 markers on the map. Now we want to use a custom image 
+for our marker. MapView has an image prop we can set so that's easy. 
+Then onPress of a marker, we want to change this image to a different 
+one to show the user that it has been selected. Again MapView has an 
+onPress prop which we can use to set a custom callback when a marker gets pressed.
+
+Here's the trick, onpress of a marker, we have to pass the index of the selected
+marker and save that to state. Then on the image prop, we can inspect
+if the marker being rendered matches the selected index in state, and use
+a different image if so.
+
+{% highlight js%}
+// At the top of the file after imports, we require our marker images
+const marker = require('./assets/images/marker.png');
+const selectedMarker = require('./assets/images/marker-selected.png');
+
+// Then in our class
+onPressMarker(e, index) {
+    this.setState({selectedMarkerIndex: index});
+}
+  
+// Then in our render method, we specify onPress and image props.
+// For brevity, I only include the relevant bits of code here
+RESTAURANTS.map((m, i) =>
+  <MapView.Marker
+    coordinate={m.latLong}
+    title={m.title}
+    description={m.description}
+    key={`marker-${i}`}
+    onPress={(e) => this.onPressMarker(e, i)}
+    image={this.state.selectedMarkerIndex === i ? selectedMarker : marker} // this is the crux of the blog
+  />
+)
+{% endhighlight %}
+
+That's it!
 
 ## Conclusion
-Check out the [sample code](https://github.com/yusinto/ld-scheduler/tree/master/example){:target="_blank"} for a working example and let me know if this is useful (or not)!
+Check out the [complete code](https://github.com/yusinto/react-native-map-markers){:target="_blank"} on 
+github. Let me know if this helps!
 
 ---------------------------------------------------------------------------------------
