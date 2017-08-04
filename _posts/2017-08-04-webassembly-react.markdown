@@ -174,7 +174,9 @@ export default class App extends Component {
 {% endhighlight %}
 
 ## Conclusion
-Check out the [sample code](https://github.com/yusinto/wasm-playground){:target="_blank"}
-for a working example and let me know if this is useful (or not)!
+The next step is to help Sean Larkin and co to get webpack support WebAssembly!
+
+The complete code is [here](https://github.com/yusinto/wasm-playground){:target="_blank"}
+as usual. Start learning C/C++. Enjoy!
 
 ---------------------------------------------------------------------------------------
