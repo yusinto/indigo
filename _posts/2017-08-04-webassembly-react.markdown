@@ -6,11 +6,13 @@ date: 2017-08-04 07:30
 tag:
 - webAssembly
 - react
+- wasm
 - web
 - assembly
 - javascript
 - c
 - c++
+- emscripten
 blog: true
 ---
 WebAssembly is the next big thing. So they say. Who knows. All I know is
