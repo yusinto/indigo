@@ -24,8 +24,8 @@ done it and I never look back. Found is very similar to react router v3, so you 
 ## Goal
 Create a relay modern app with ssr with found and found relay.
 
-## Step 1: TODO
-TODO
+## Step 1: Install
+Install found and found relay
 
 ## Step 1: Install
 Install relay-compiler-plus and the latest [graphql-js](https://github.com/graphql/graphql-js){:target="_blank"} package:
