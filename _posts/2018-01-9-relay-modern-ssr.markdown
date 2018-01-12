@@ -24,10 +24,25 @@ done it and I never look back. Found is very similar to react router v3, so you 
 ## Goal
 Create a relay modern app with ssr with found and found relay.
 
-## Step 1: Install
-Install found and found relay
+## Step 1: Install npm packages
+Install babel-polyfill (for async await), found and found relay
 
-## Step 1: Install
+## Step 2: Create routes
+create routes, makeRouteConfig, export that routeConfig object.
+createBrowserRouter using routeConfig object.
+
+## Step 3: SSR
+use the same routes object
+on the client bootstrap use createInitialBrowserRouter instead and await on that
+u also need createRender function (TODO: investigate why?) 
+
+On the server, await getFarceResult from found/lib/server passing in url, routeConfig and 
+render method to get the output data from the requested route.
+
+Then renderToString the element property from the output. That's it!
+
+Without redux, it's soo much cleaner! 
+
 Install relay-compiler-plus and the latest [graphql-js](https://github.com/graphql/graphql-js){:target="_blank"} package:
 
 {% highlight bash %}
