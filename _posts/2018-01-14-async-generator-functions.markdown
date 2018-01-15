@@ -15,7 +15,15 @@ tag:
 - of
 blog: true
 ---
-An exciting new feature of js is async generator functions. 
+An exciting new feature of js is async generator functions. A normal function in javascript is
+run from beginning till end i.e. run to completion. Once invoked, the entire body
+of the function is executed until the end is reached. You can't stop or pause the execution of an
+ordinary js function.
+
+Generator functions however, does not run to completion. You use the yield keyword to pause function
+execution and then the next() method to continue execution.
+
+
 
 ## Goal
 Use async generator functions right now with babel.
