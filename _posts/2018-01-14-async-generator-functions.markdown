@@ -1,47 +1,68 @@
 ---
 published: true
-title: "Relay Modern Server Side Rendering"
+title: "Async Generator Functions"
 layout: post
-date: 2018-01-09 07:30
+date: 2018-01-14 07:30
 tag:
-- relay
-- modern
-- ssr
-- server
-- side
-- rendering
-- redux
-blog: false
+- async
+- generator
+- functions
+- iterator
+- yield
+- for-await-of
+- for
+- await
+- of
+blog: true
 ---
-Relay modern is awesome, but unfortunately not much has been documented about how to use it with ssr. Facebook
-does not use ssr with relay modern so it's up to the community to do something about it. When I say community it's
-really just one man Jimmy Chia aka taion who has single-handedly written found router, farce and found relay to
-make ssr possible with relay modern.
-
-If you are using react-router, you're out of luck. You'll need to jump the cliff and swap it out with found. I have 
-done it and I never look back. Found is very similar to react router v3, so you won't have any problems switching.
+An exciting new feature of js is async generator functions. 
 
 ## Goal
-Create a relay modern app with ssr with found and found relay.
+Use async generator functions right now with babel.
 
-## Step 1: Install npm packages
-Install babel-polyfill (for async await), found and found relay
+## Step 1: What is a generator function?
+A generator function is a function which returns an iterator when run.
+An iterator is an object that has a next() method implemented returning an object { value, done }.
 
-## Step 2: Create routes
-create routes, makeRouteConfig, export that routeConfig object.
-createBrowserRouter using routeConfig object.
+{% highlight javascript %}
+function* () {
+    console.log(1);
+    let temp = yield "first yield";
+    console.log(temp);
+    yield "second yield";
+    return;
+} 
+{% endhighlight %}
 
-## Step 3: SSR
-use the same routes object
-on the client bootstrap use createInitialBrowserRouter instead and await on that
-u also need createRender function (TODO: investigate why?) 
+## Step 2: What is an async generator function?
+Is the same as a generator function, BUT iterator.next() returns a promise returning the { value, done } object.
 
-On the server, await getFarceResult from found/lib/server passing in url, routeConfig and 
-render method to get the output data from the requested route.
+{% highlight javascript %}
+async function* () {
+    console.log(1);
+    let temp = yield "first yield";
+    console.log(temp);
+    yield "second yield";
+    return;
+} 
+{% endhighlight %}
 
-Then renderToString the element property from the output. That's it!
+## Step 3: How to use async generator with babel
+{% highlight bash %}
+yarn add --dev babel-plugin-transform-async-to-generator babel-plugin-transform-async-generator-functions
+{% endhighlight %}
 
-Without redux, it's soo much cleaner! 
+Then in your .babelrc file:
+
+{% highlight json %}
+{
+  "plugins": [
+    "transform-async-to-generator",
+    "transform-async-generator-functions"
+  ]
+}
+{% endhighlight %}
+
 
 Install relay-compiler-plus and the latest [graphql-js](https://github.com/graphql/graphql-js){:target="_blank"} package:
 
