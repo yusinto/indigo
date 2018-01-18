@@ -13,7 +13,7 @@ tag:
 - for
 - await
 - of
-blog: true
+blog: false
 ---
 An exciting new feature of js is async generator functions. A normal function in javascript is
 run from beginning till end i.e. run to completion. Once invoked, the entire body
