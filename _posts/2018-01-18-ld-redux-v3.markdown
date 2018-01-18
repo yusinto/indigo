@@ -33,11 +33,12 @@ You can consume your flags directly from your redux store without having to use 
 
 The subscription logic has been moved to the *init()* method so all subscriptions are done just once. Very efficient.
 
-![Backwards compatibility?](https://github.com/yusinto/indigo/blob/gh-pages/assets/images/steve-jobs-small.jpg)
+<h1 style="color: red">!!WARNING!!</h1>
 
-##Warning
+![Backwards compatibility?](/assets/images/steve-jobs-small.jpg)
+
 v3 is **NOT** backwards compatible with v1.x! So be prepared to do some refactoring if you are on v1 upgrading to v3.
-It's a simple upgrade though. You'll find you'll delete a lot of code more than anything. ld-redux v3 is launch darkly 
+It's a simple upgrade though. You will be deleting code most of the time. ld-redux v3 is launch darkly 
 and redux as it's meant to be!
 
 ## How to use?
