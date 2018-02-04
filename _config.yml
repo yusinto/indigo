@@ -1,6 +1,6 @@
 # main text of home
-name: React Junkie
-bio: 'Time to react'
+name: React Junkie - Yusinto Ngadiman's Blog
+bio: 'Oss contributor and coding addict'
 
 # if it's an external image, update below for true
 external-image: false
@@ -30,7 +30,7 @@ twitter: yusinto
 # google: mygoogle
 # instagram: myinstagram
 # pinterest: mypinterest
-# linkedin: mylinkedin
+linkedin: yusinto
 #youtube: myyoutube
 #spotify: 1232323912
 github: yusinto

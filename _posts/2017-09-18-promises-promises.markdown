@@ -35,6 +35,7 @@ It's actually very interesting!
 Understand when parts of your promise gets executed and why.
 
 ## Step 1: Anatomy of a Promise
+{% highlight javascript %}
 const p = new Promise(
     // this function is called the "executor"
     (resolve, reject) => {

@@ -6,7 +6,7 @@ permalink: /about/index.html
 ![Profile Image]({{ site.url }}/{{ site.picture }})
 
 <h2>Who am I?</h2>
-<p>No I'm not a drug addict, but I am addicted to coding specifically react. I come from a .NET
+<p>Hello, my name is Yusinto Ngadiman and I'm a coding addict, specifically react. I come from a .NET
 background and I did angular for a while. However, sometime ago I started doing react and I never look back. The
 react/redux/react router/relay ecosystem have really changed front end development as I know it.
 </p>
