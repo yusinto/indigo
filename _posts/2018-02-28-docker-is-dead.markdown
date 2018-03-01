@@ -22,10 +22,11 @@ tag:
 - end
 blog: true
 ---
-Kubernetes changed my life. Kubernetes engine to be more exact. I was so inspired by Kelsey Hightower's 
+Kubernetes rocks. Kubernetes engine to be more exact. I was so inspired by Kelsey Hightower's
 [presentation](https://www.youtube.com/watch?v=kOa_llowQ1c&feature=youtu.be){:target="_blank"} at KubeCon 2017 I
 spent the next 2 weeks migrating my entire pipeline from Jenkins/AWS/Terraform to Google Cloud Platform (GCP for short) 
 and the Kubernetes Engine. It's the best decision I have ever made.
+
 
 In this blog I'll walk you through how to set up a dev pipeline on GCP and the Kubernetes Engine.   
 
@@ -35,19 +36,46 @@ tests then you push your code to git. The *intent* is clear. Pushing to git mean
 environment somewhere. This environment should also be predictable and well-defined. Without doing any more work, you
 should be able to open your browser and run the code you just pushed in this well-defined environment.
 
-The goal of this tutorial is to build a pipeline that does exactly that. At the end of this post, you should be able to
+The goal of this tutorial is to build a pipeline that does exactly that. At the end of this post, you should be able to:
+
 1. Create a new feature branch off master.
 2. Write code and test locally.
 3. Push to git.
-4. Browse to a well-defined feature url running the new code.
- 
-Relay modern is awesome, but unfortunately not much has been documented about how to use it with ssr. Facebook
-does not use ssr with relay modern so it's up to the community to do something about it. When I say community it's
-really just one man Jimmy Chia aka taion who has single-handedly written found router, farce and found relay to
-make ssr possible with relay modern.
+4. Browse to a well-defined feature url which runs the new code.
 
-If you are using react-router, you're out of luck. You'll need to jump the cliff and swap it out with found. I have 
-done it and I never look back. Found is very similar to react router v3, so you won't have any problems switching.
+## Step 1: Create a Kubernetes cluster
+Jump into the google cloud console and create a new Kubernetes cluster. I call my cluster *features*. When we push a
+git commit to a feature branch, we'll deploy a copy of our app running this feature code on this cluster. I left many
+of the default settings e.g. 3 nodes in the cluster on Container-Optimised OS. The console is pretty straightforward
+so you shouldn't have any issues.
+
+It takes some time for google to create your cluster because it has to provision the nodes. While that's cooking,
+we'll create the build job.
+
+## Step 2:
+In the console menu, go to Tools -> Container Registry -> Build triggers. Add a new trigger. You'll need to
+select your source (I use github) and repo and authorise container builder to access it. Then you'll get to the
+Edit Trigger page which is the interesting part. Give your trigger a name, I name mine *feature* because it
+gets triggered by a feature push and builds and deploys that feature.
+
+![Container builder trigger settings](/assets/images/build_trigger_settings.jpg)
+
+1. Set the trigger type to branch, because we want to invoke this trigger when a branch push happens. There is also
+an option to trigger on tag push, which is useful for production deployment (when you create a release tag) but we'll
+cover that in future post.
+
+2. Set a regex to match the feature branch names. Mine feature branches start with feature-[JIRA_TICKET_NUMBER]-description.
+All the developers follow this branch naming convention when they create a new feature branch. Once a convention is in place, you
+can set a regex expression here to match your convention.
+
+3. You define your build steps in a yaml file called cloudbuild.yaml. By default container builder looks for *cloudbuild.yaml*
+at the root of your repo. You can specify a custom location and yaml file if you want.
+
+## Step 3: cloudbuild.yaml
+
+So what's in this yaml file?
+
+
 
 ## Goal
 Create a relay modern app with ssr with found and found relay.
