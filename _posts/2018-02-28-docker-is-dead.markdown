@@ -1,6 +1,6 @@
 ---
 published: true
-title: "Docker is dead: How Kubernetes Killed Docker"
+title: "Docker is dead long live Kubernetes"
 layout: post
 date: 2018-02-28 07:30
 tag:
@@ -22,8 +22,25 @@ tag:
 - end
 blog: true
 ---
+Kubernetes changed my life. Kubernetes engine to be more exact. I was so inspired by Kelsey Hightower's 
+[presentation](https://www.youtube.com/watch?v=kOa_llowQ1c&feature=youtu.be){:target="_blank"} at KubeCon 2017 I
+spent the next 2 weeks migrating my entire pipeline from Jenkins/AWS/Terraform to Google Cloud Platform (GCP for short) 
+and the Kubernetes Engine. It's the best decision I have ever made.
 
+In this blog I'll walk you through how to set up a dev pipeline on GCP and the Kubernetes Engine.   
 
+## Goal
+During development, the dev test cycle is predictable and well-defined. You write code, it runs locally and pass all the 
+tests then you push your code to git. The *intent* is clear. Pushing to git means you want to see that code running on an 
+environment somewhere. This environment should also be predictable and well-defined. Without doing any more work, you
+should be able to open your browser and run the code you just pushed in this well-defined environment.
+
+The goal of this tutorial is to build a pipeline that does exactly that. At the end of this post, you should be able to
+1. Create a new feature branch off master.
+2. Write code and test locally.
+3. Push to git.
+4. Browse to a well-defined feature url running the new code.
+ 
 Relay modern is awesome, but unfortunately not much has been documented about how to use it with ssr. Facebook
 does not use ssr with relay modern so it's up to the community to do something about it. When I say community it's
 really just one man Jimmy Chia aka taion who has single-handedly written found router, farce and found relay to
