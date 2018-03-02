@@ -61,7 +61,7 @@ select your source (I use github) and repo and authorise container builder to ac
 Edit Trigger page which is the interesting part. Give your trigger a name, I name mine *feature* because it
 gets triggered by a feature push and builds and deploys that feature.
 
-![Container builder trigger settings](/assets/images/build_trigger_settings.jpg)
+![Container builder trigger settings](/assets/images/trigger_settings.png)
 
 1. Set the trigger type to branch, because we want to invoke this trigger when a branch push happens. There is also
 an option to trigger on tag push, which is useful for production deployment (when you create a release tag) but we'll
@@ -72,10 +72,14 @@ All the developers follow this branch naming convention when they create a new f
 can set a regex expression here to match your convention.
 
 3. You define build steps in the cloudbuild.yaml file. By default container builder looks for *cloudbuild.yaml*
-at the root of your repo. You can specify a custom location and yaml file if you want.
+at the root of your repo. 
+
+4. **Optional** - you can specify a custom location and yaml file if you want.
 
 ## Step 3: cloudbuild.yaml
-This is where you define build steps. Each build step is a container running in its own shell. We need at least two steps here to:
+This is where you define build steps. Each build step is a container running in its own shell. 
+
+<script src="https://gist.github.com/yusinto/3922f40d0b8d0241b6c6ead1a9aa8f3f.js"></script>
 
 1. Build the docker image of our feature.
 
@@ -83,18 +87,18 @@ This is where you define build steps. Each build step is a container running in 
 
 At the end of the yaml, images specified in the *[images]* label will be pushed to the remote registry.
 
-INSERT jist here of cloudbuild.yaml
 
 ## Step 4: deployment.yaml
+This is a standard kubernetes yaml specifying resources in the cluster. 
 
-This is a standard kubernetes yaml specifying resources in the cluster. The main points here is that:
+<script src="https://gist.github.com/yusinto/9536fa7dcd28106efee7f8b217a9d06a.js"></script>
+
+The main points here is that:
 
 1. We specify 2 resources: a deployment containing our pod spec and a service to expose our pods to the external world so that
 it's accessible via the internet.
 
 2. We use a placeholder string called _BRANCH_NAME which gets replaced in our build step in [cloudbuild.yaml](#step3) with the real branch name.
-
-INSERT jist here of deployment.yaml
 
 ## Step 5: Test the app!
 It takes a while for google cloud to assign an external ip to our service. You can check under Kubernetes Engine -> Discovery & load balancing.
