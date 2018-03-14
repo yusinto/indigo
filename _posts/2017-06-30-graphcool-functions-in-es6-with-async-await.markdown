@@ -38,7 +38,7 @@ the Graphcool console and specify the event which will trigger this logic.
 
 ## Goal
 The goal is to create a stripe customer when a Graphcool customer is created. It's a very common
-use case. The complete code is [here](https://github.com/graphcool-examples/functions/tree/master/stripe-create-customer-es6){:target="_blank"}.
+use case. The complete code is [here](https://github.com/yusinto/functions/tree/master/stripe-create-customer-es6){:target="_blank"}.
 
 Enough talk, let's code!
 
@@ -127,7 +127,7 @@ functions. There's a [bonus section](#bonus-webpack-configuration) at the
 end of this blog if you are interested in how the webpack config works.
 
 ### Step 3.1: Copy package.json
-Copy package.json from [here](https://github.com/graphcool-examples/functions/tree/master/stripe-create-customer-es6){:target="_blank"}
+Copy package.json from [here](https://github.com/yusinto/functions/tree/master/stripe-create-customer-es6){:target="_blank"}
 to your root directory. Then do yarn.
 
 {% highlight bash %}
@@ -140,7 +140,7 @@ library and a fetch library so those are included as dependencies.
 
 
 ### Step 3.2: Copy webpack.config.js and .babelrc and create src dir
-Copy webpack.config.js and .babelrc files from [here](https://github.com/graphcool-examples/functions/tree/master/stripe-create-customer-es6){:target="_blank"}
+Copy webpack.config.js and .babelrc files from [here](https://github.com/yusinto/functions/tree/master/stripe-create-customer-es6){:target="_blank"}
 into the root directory of your project. Check the
 [bonus section](#bonus-webpack-configuration) below if you want to dig
 into the webpack config.
