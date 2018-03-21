@@ -47,7 +47,7 @@ The goal of this tutorial is to build a pipeline that does exactly that. At the 
 3. Browse to a well-defined feature url which has the new code running.
 
 ## Step 1: Create a Kubernetes cluster
-Jump into google cloud console and under the main menu, go to **Compute -> Kubernetes Engine -> Kubernetes clusters** and
+Jump into google cloud console and under the main menu, go to Compute -> Kubernetes Engine -> Kubernetes clusters and
 click on Create Cluster. You'll see a screen like below, you only need to touch 3 fields:
 
 ![Create Kubernetes cluster](/assets/images/create-cluster.png)
@@ -65,7 +65,7 @@ some time for google to create your cluster because it has to provision the node
 the build job.
 
 ## Step 2: Create a build trigger
-In the console menu, go to **Tools -> Container Registry -> Build triggers**. Add a new trigger. Select your git source 
+In the console menu, go to Tools -> Container Registry -> Build triggers. Add a new trigger. Select your git source
 (I use github) and repo and authorise container builder to access it. Then you'll get to the
 Edit Trigger page like below:
 
@@ -79,7 +79,7 @@ an option to trigger on tag push, which is useful for production deployment (whe
 cover that in a future post.
 
 3. Set a regex to match the feature branch names. By convention I enforce the following convention for features:
-**feature-[JIRA_TICKET_NUMBER]-description**. All the developers follow this naming convention when they create a new 
+feature-[JIRA_TICKET_NUMBER]-description. All the developers follow this naming convention when they create a new
 feature branch. Once a convention is in place, you can set a regex expression here to match your feature branches.
 
 4. You define your build steps in the cloudbuild.yaml file. Set the location of *cloudbuild.yaml* so container builder
@@ -91,15 +91,15 @@ here is a container running in its own shell. For our demo, we'll use the cloudb
 
 <script src="https://gist.github.com/yusinto/3922f40d0b8d0241b6c6ead1a9aa8f3f.js"></script>
 
-There are 3 build steps in our *cloudbuild.yaml* file. Each step has a **name** and and an **id**. The **name** field refers to a 
+There are 3 build steps in our cloudbuild.yaml file. Each step has a name and and an id. The name field refers to a
 docker image that the build step will pull and run to execute the step. Container builder supports a [common set of builder
 images](https://github.com/GoogleCloudPlatform/cloud-builders){:target="_blank"} you can use as build steps. There are also [community
 images](https://github.com/GoogleCloudPlatform/cloud-builders-community){:target="_blank"}. In this example we'll only
 use google builder steps because it's more than sufficient for our needs.
 
-The **id** field is optional but useful to specify because it will be displayed in the build logs. Otherwise you'll see the 
-**name** field instead, which is not as informative. Also by specifying an id,
-you can make subsequent build steps to **waitFor** this build step so those child steps can run concurrently. Speed up baby! So cool!
+The id field is optional but useful to specify because it will be displayed in the build logs. Otherwise you'll see the
+name field instead, which is not as informative. Also by specifying an id,
+you can make subsequent build steps to waitFor this build step so those child steps can run concurrently. Speed up baby! So cool!
 
 We build our docker image in the first step. By specifying **gcr.io/cloud-builders/docker**, container builder
 will pull that image and run a docker container running the docker command. We'll pass the build arguments to this 
