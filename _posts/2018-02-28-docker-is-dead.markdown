@@ -22,6 +22,8 @@ tag:
 - end
 blog: true
 ---
+**Update 22 Mar 2018**: Fixed cloudbuild.yaml to generate a docker tag every time otherwise kubernetes does not detect changes.
+
 Kubernetes rocks. Kubernetes engine to be exact. I was so inspired by Kelsey Hightower's
 [presentation](https://www.youtube.com/watch?v=kOa_llowQ1c&feature=youtu.be){:target="_blank"} at KubeCon 2017 I
 spent the next 2 weeks migrating my entire pipeline from Jenkins/AWS/Terraform to Google Cloud Platform (GCP for short) 
@@ -101,23 +103,22 @@ The id field is optional but useful to specify because it will be displayed in t
 name field instead, which is not as informative. Also by specifying an id,
 you can make subsequent build steps to waitFor this build step so those child steps can run concurrently. Speed up baby! So cool!
 
-We build our docker image in the first step. By specifying **gcr.io/cloud-builders/docker**, container builder
-will pull that image and run a docker container running the docker command. We'll pass the build arguments to this 
-docker command like we would in a terminal. In the same fashion, the second step pushes the image we just created.
-These steps are equivalent to:
+In the first step, we generate a random tag (based on an md5 hash of the current timestamp) for our docker image. Don't always tag
+your images as latest because if the tag is unchanged, kubernetes won't be able to detect that the image has been updated
+and won't update your pods. We output the md5 hash to a text file in the checkout directory. The checkout directory
+persists across steps so we can access this text file later in subsequent steps.
 
-{% highlight bash %}
-docker build -t gcr.io/gke-playground/some-branch-name:latest .
-docker push gcr.io/gke-playground/some-branch-name:latest
-{% endhighlight %}
+In the second step we build and push our docker image. We get the md5 hash from step 1 above and save it
+to a shell variable. We can then use this to build and push our docker image.
 
+Now we are ready to deploy our image! 
 
 ## Step 4: deployment-template.yaml
-Let's take a look at the third step which runs **kubectl**. This step deploys our docker image to the Kubernetes cluster. Note
+Let's take a look at the third step which runs kubectl. This step deploys our docker image to the Kubernetes cluster. Note
 that this step runs the **gcr.io/cloud-builders/kubectl** image, but we specified the
-entrypoint as **bash** meaning that the container will run the bash command when it starts rather
-than **kubectl**. This is a useful technique if you need to pre-run some commands prior to executing
-the main command. We'll come back to this in a minute after inspecting **deployment-template.yaml**:
+entrypoint as bash meaning that the container will run the bash command when it starts rather
+than kubectl. This is a useful technique if you need to pre-run some commands prior to executing
+the main command. We'll come back to this in a minute after inspecting deployment-template.yaml:
 
 <script src="https://gist.github.com/yusinto/9536fa7dcd28106efee7f8b217a9d06a.js"></script>
 
@@ -127,15 +128,16 @@ This is a standard kubernetes resource yaml specifying two resources to be creat
 
 2. A service to expose our pods to the external world so that it's accessible via the internet.
 
-We use a placeholder string **_BRANCH_NAME** which gets replaced by the real **$BRANCH_NAME** using the **sed** command
+We use a placeholder string _BRANCH_NAME and _TAG which gets replaced by the real $BRANCH_NAME and our md5 hash using the sed command
 in our build step:
 
 {% highlight bash %}
-sed -e "s|_BRANCH_NAME|$BRANCH_NAME|g" deployment-template.yaml | tee deployment.yaml
+sed -e "s|_BRANCH_NAME|$BRANCH_NAME|g" -e "s|_TAG|$tag|g" deployment-template.yaml | tee deployment.yaml
 {% endhighlight %}
 
-**$BRANCH_NAME** is injected by the Container Builder as an environment variable to all build steps. This is the git 
-branch name that triggers the build. There are [others](https://cloud.google.com/container-builder/docs/configuring-builds/substitute-variable-values){:target="_blank"} 
+Like in the previous docker-build-push step, we get the tag from the md5 hash from step 1. $BRANCH_NAME is injected by 
+the Container Builder as an environment variable to all build steps. This is the git branch name that triggers the build. 
+There are [other environment variables](https://cloud.google.com/container-builder/docs/configuring-builds/substitute-variable-values){:target="_blank"} 
 you can use.
 
 This produces a new `deployment.yaml` which gets used by `kubectl` for deployment:
@@ -146,18 +148,10 @@ kubectl apply -f deployment.yaml
 
 This way, we can deploy each branch to its own infrastructure mirroring our git branching strategy.
 
-## Step 5: What's this **images** thing at the end?
-At the end of **cloudbuild.yaml**, the **images** command will push the specified docker images to the remote registry. 
-Wait a minute! Didn't we already push our docker image in build step #2? Yes and you'd be right my observant friend (if you
-are still awake reading this long post). It is common to rely on the **images** command to push our docker images rather than
-explicitly doing so through a build step. However we had to push prior to executing **kubectl** so we could not rely on the
-**images** command which runs at the **end** of all build steps. So what's the point of having the **images** command in the yaml
-at all? If you pushed an image explicitly in a build step AND specify the **images** command, you will see the image pushed in the
-build results in the console. If you don't specify the **images** command, you won't see it in the build results. Simple! 
-
-## Step 6: Test the app!
-It takes a while for google cloud to assign an external ip to our service. You can check under **Compute -> Kubernetes Engine -> Discovery & load balancing**.
-The *Endpoints* column should display a valid external ip when it's ready. Then you can hit that link and your app should be running!
+## Step 5: Test the app!
+Push a git commit to a feature branch and watch the magic happens! It takes a while for google cloud to assign an external 
+ip to our service. You can check under Compute -> Kubernetes Engine -> Discovery & load balancing. The *Endpoints* column 
+should display a valid external ip when it's ready. Then you can hit that link and your app should be running!
 
 ## Conclusion
 Deploying my app used to involve many moving parts: Jenkins, ec2 instances, load balancers, terraform, ecs. Kubernetes Engine
