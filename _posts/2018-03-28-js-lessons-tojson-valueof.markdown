@@ -22,16 +22,22 @@ JSON.stringify():
 <script async src="https://static.codepen.io/assets/embed/ei.js"></script>
 
 Without the custom toJSON() implementation, the code above will use the default
-implementation and output:
+implementation:
 
 {% highlight json %}
 {"firstName":"Yus","lastName":"Ng"}
 {% endhighlight %}
 
 ## valueOf()
+Object.prototype has a built-in valueOf method which returns the primitive value
+of the object. You can override this method to return a custom primitive value
+for your object:
 
 <p data-height="372" data-theme-id="dark" data-slug-hash="YaYQyo" data-default-tab="js,result" data-user="yusinto" data-embed-version="2" data-pen-title="Javascript Lessons: valueOf" class="codepen">See the Pen <a href="https://codepen.io/yusinto/pen/YaYQyo/">Javascript Lessons: valueOf</a> by Yusinto Ngadiman (<a href="https://codepen.io/yusinto">@yusinto</a>) on <a href="https://codepen.io">CodePen</a>.</p>
 <script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+
+The override allows us to perform arithmetic with our object. Without the override,
+the valueOf myCar will be NaN (Not-a-Number).
 
 
 ---------------------------------------------------------------------------------------
