@@ -10,6 +10,8 @@ tag:
 - queues
 - js
 - asynchronous
+- event
+- loop
 blog: true
 ---
 So you think you know how promises work? Someone ever comes to you
@@ -35,179 +37,71 @@ It's actually very interesting!
 Understand when parts of your promise gets executed and why.
 
 ## Step 1: Anatomy of a Promise
-{% highlight javascript %}
-const p = new Promise(
-    // this function is called the "executor"
-    (resolve, reject) => {
-        console.log(1);
-        resolve(2);
-        console.log(3);
-    }
-);
+<script src="https://gist.github.com/yusinto/28295371fc7613f66fab39f0c7435c54.js"></script>
 
-console.log(4);
+Wanna guess what the output is? You can run the code [here](https://repl.it/repls/WelloffSeveralPlatypus){:target="_blank"}
+and see for yourself. Or I can just tell you. It is: 1 3 4 6 2 5.
 
-p.then(
-    // this is the success handler
-    result => console.log(result)
-);
+It doesn’t matter if you guessed right or wrong. It matters if you understand why this is the output.
 
-console.log(5);
-{% endhighlight %}
+## Step 2: The executor
+It is always run immediately! The moment you new up a Promise, the function
+you specify in the constructor i.e. the executor gets run immediately in the current tick.
 
-What is the output of the code above? We'll go through this in this blog.
+So 1 gets printed, then resolve gets called. Calling resolve marks the promise as
+fulfilled and that’s it. It does not trigger anything else.
 
-## Step 2: The event loop
-This gives javascript that infamous single-threaded reputation. It is
-an infinite while true loop that continues forever. Each iteration of
-this loop is called a "tick".
+Then 3 gets printed. The current tick continues out of the promise constructor and prints 4.
 
 
-## Step 2: The Queue
-Each tick processes an item off the queue.
+## Step 3: .then
+This is the interesting part. Remember the promise was resolved? When you
+call .then on a resolved promise, the success handler gets scheduled in
+the job queue. What the hell? What’s a job queue? Never heard of it. Am
+I making this shit up? It’s [real](https://www.ecma-international.org/ecma-262/6.0/#sec-jobs-and-job-queues){:target="_blank"}
+my friend. Keep reading.
 
-## Step 3. The Job Queue
+## Step 4: The job queue
+You must be familiar with the event loop and the event queue (if not, google them!)?
+This gives javascript that infamous single-threaded reputation. Each iteration
+of this loop is called a “tick”. Each tick processes a message from the event queue.
+So is the event queue the same as the job queue?
 
+No it is not. The job queue is a completely separate queue. More importantly,
+messages in this queue are processed immediately at the end of each tick
+before the beginning of the next tick. Each tick has its own job queue.
 
-* Download [emscripten portable](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz){:target:"_blank"}
-* Unzip and cd into the dir and execute these:
+It’s like jumping the event queue. Success handlers for promises are
+scheduled into this job queue. They get executed before the next message
+in the event queue.
 
-{% highlight bash %}
-./emsdk update
-./emsdk install latest
-./emsdk activate latest
-source ./emsdk_env.sh
-{% endhighlight %}
+So with this newfound wisdom, our success handler above gets scheduled
+in the job queue, to be run at the end of the tick.
 
-* Add the emcc executable to your /etc/paths file. Mine is
-located at /your_download_dir/emsdk-portable/emscripten/1.37.16
+## Step 5: What goes into the event queue?
 
-## Step 2: Write C code
-Create a file called utils.c under your src folder.
+Glad you asked. Things like setTimeout callbacks and event listeners are
+scheduled into the event queue. So in our example above, console.log(5)
+is scheduled into the event queue, even when the delay is 0ms. That means
+this gets run after the success handler because the event queue is processed
+in the next tick.
 
-#### utils.c
-{% highlight javascript %}
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <emscripten/emscripten.h>
+## Step 6: Booooringg
 
-int main(int argc, char ** argv) {
-    // gets translated to console.log
-    printf("WebAssembly successfully loaded!\n");
-}
+Ok ok last we saw our program, it output 4, so what’s next? We saw .then
+and setTimeout are asynchronous i.e. they get scheduled into the job queue
+and the event queue respectively, so the current tick continues and executes
+console.log(6). The tick ends, or has it? We still have the job queue at
+the of the tick, so no it has not ended yet.
 
-// Emscripten does dead code elimination during compilation.
-// This decorator ensures our code does not get removed.
-EMSCRIPTEN_KEEPALIVE
-int generateRandom() {
-    srand ( time(NULL) );
-    return rand();
-}
-{% endhighlight %}
+Our program then executes the success handler, which is the first and only
+job in the job queue. This outputs 2. Then the tick ends.
 
-
-## Step 3: Compile your C code
-
-{% highlight bash %}
-emcc utils.c -s WASM=1 -o utils.js -O3
-{% endhighlight %}
-
-* -s Specify settings which gets passed down to the emscripten compiler. Here
-we specify we want to compile to wasm. The default is asm. This will
-produce utils.wasm.
-
-* -o Specify the filename for the glue code. This will produce utils.js.
-
-* -O3 The first character is the upper case letter 'O' not zero! Sets the optimisation
-level for your wasm and js files. You can check the various optimisation levels
-[here](https://kripken.github.io/emscripten-site/docs/tools_reference/emcc.html#emcc-o0){:target="_blank"}.
-
-## Step 4: Add the glue code to your html
-
-{% highlight html %}
-<!DOCTYPE html>
-    <html>
-         <head>
-            <title>Hasta la vista JS!</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-          </head>
-          <body>
-            <div id="reactDiv"/>
-            <script src="/dist/utils.js"></script>
-            <script src="/dist/bundle.js"></script>
-          </body>
-    </html>
-{% endhighlight %}
-
-## Step 5: Add an express route to serve wasm files
-
-Express does not serve .wasm files by default so we have to add a custom route.
-
-#### server.js
-{% highlight javascript %}
-app.get('/:filename.wasm', (req, res) => {
-  const wasmFilePath = path.resolve(__dirname, 
-    `../../dist/${req.params.filename}.wasm`);
-  
-  console.log(`Wasm request ${wasmFilePath}`);
-
-  fs.readFile(wasmFilePath, (err, data) => {
-    const errorMessage = `Error ${wasmFilePath} not found. ${JSON.stringify(err)}`;
-    if (err) {
-      console.log(errorMessage);
-      res.status(404).send(errorMessage);
-      return;
-    }
-    res.send(data);
-  });
-});
-{% endhighlight %}
-
-## Step 6: Call wasm from React!
-
-Finally! You can now use your C function from React by prefixing an underscore
-in front of the C function's name. We included the glue code in our app html, so
-all your C methods are exposed globally. This is not the best way, but 
-in the future, webpack will rescue us. There is [wip](https://medium.com/webpack/webpack-awarded-125-000-from-moss-program-f63eeaaf4e15){:target="_blank"}
-right now sponsored by Mozilla to develop first class support for WebAssembly in webpack. 
-This means we'll be able to import C/C++ files directly in js files and
-call wasm functions directly! 
-
-Till that day arrives, a global script tag will have to do for now.
-
-#### app.js
-{% highlight javascript %}
-
-export default class App extends Component {
-    state = {randomNumber: -1};
-    
-    onClickGenerateRandom = () => {
-      // EUREKA! Call our C function with an underscore prefix!
-      // All the methods in utils.c are exposed globally because utils.js
-      // is included as a script tag in our html.
-      const randomNumber = _generateRandom();
-      console.log(`onClickGenerateRandom: ${randomNumber}`);
-      this.setState({randomNumber});
-    }; 
-      
-    render() {
-      return (
-        <div>
-          <button onClick={this.onClickGenerateRandom}>
-            Generate random
-          </button>
-          {this.state.randomNumber}
-        </div>
-      );
-    }
-}
-{% endhighlight %}
+Finally our program continues to the next tick and executes console.log(5).
+The end!
 
 ## Conclusion
-The next step is to help Sean Larkin and co to get webpack support WebAssembly!
 
-The complete code is [here](https://github.com/yusinto/wasm-playground){:target="_blank"}
-as usual. Start learning C/C++. Enjoy!
+Best have lotsa vodka when talking about promises. Thanks for reading!
 
 ---------------------------------------------------------------------------------------
