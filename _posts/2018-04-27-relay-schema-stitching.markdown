@@ -17,66 +17,62 @@ tag:
 blog: true
 ---
 
-Schema stitching was introduced by apollo, so there is a misconception that it
+Schema stitching was introduced by Apollo, so there is a general misconception that it
 only works with the apollo stack but it works with relay as well! In this blog
-I'll show you how to stitch your relay schema with a remote graphql schema.
+I'll show you how to stitch your relay schema with any remote graphql schema.
 
+You can find the complete project in [github](https://github.com/yusinto/relay-compiler-plus/tree/master/example-stitching){:target="_blank"}.
+
+## Goal
+Given a local schema that looks like this:
+
+<script src="https://gist.github.com/yusinto/c4c6a8f376a36f600ddb0f1f24c952df.js"></script>
+
+Stitch it so that business details are coming from a remote graphql server, in this case from [prisma](https://www.prisma.io/){:target="_blank"}.
 
 ## Step 1: Install graphql-cli
-
+We'll use the graphql cli to download the remote schema:
+ 
 {% highlight bash %}
 yarn add -D graphql-cli
 {% endhighlight %}
 
 ## Step 2: Download the remote schema
+Graphql cli looks for a .graphqlconfig.yml by default, so we'll create that file
+and it looks like this:
+
+<script src="https://gist.github.com/yusinto/7cfbeeac5e0b6a35dde44a72e5e1a268.js"></script>
+
+In this example, I have set up a graphql server with [prisma](https://www.prisma.io/){:target="_blank"} 
+but you can use any graphql endpoint. Prisma is created by the guys from graphcool, check it out if you haven't!
+
+Add the following npm command to your package.json:
 
 {% highlight bash %}
-"get-remote-schema": "graphql get-schema -p remote",
+"get-remote-schema": "graphql get-schema",
 {% endhighlight %}
+
+Run it to download the remote schema to ./remote.schema.graphql:
+{% highlight bash %}
+npm run get-remote-schema
+{% endhighlight %}
+ 
 
 ## Step 3: Stitch
-Use apollo graphql-tools to stitch your schema with the remote schema you just
-downloaded:
+The stitching part is pretty standard, following Apollo's doco:
+
+<script src="https://gist.github.com/yusinto/9ab425fc0a100f81c183e824f1405b57.js"></script>
 
 
-const remoteSchema = makeRemoteExecutableSchema({
-  schema: makeExecutableSchema({typeDefs: remoteTypeDefs}),
-  fetcher,
-});
-const result = mergeSchemas({
-  schemas: [rcpSchema, remoteSchema],
-});
+## Step 4: Compile
+Lastly in this example, we'll compile our relay queries using [relay-compiler-plus](https://github.com/yusinto/relay-compiler-plus){:target="_blank"}
+so we'll get schema stitching plus persisted queries for free!
 
-export default result;
-
-Lastly compile it using relay compiler plus:
-"remote-rcp": "npm run remote && NODE_ENV=production relay-compiler-plus --webpackConfig src/server/webpack.config.js --src src",
-
-## toJSON()
-If you need a custom output when json stringifying your object, you can define
-a function called toJSON() which will be invoked automatically by
-JSON.stringify():
-
-<p data-height="376" data-theme-id="dark" data-slug-hash="KoZmLa" data-default-tab="js,result" data-user="yusinto" data-embed-version="2" data-pen-title="Javascript Lessons" class="codepen">See the Pen <a href="https://codepen.io/yusinto/pen/KoZmLa/">Javascript Lessons</a> by Yusinto Ngadiman (<a href="https://codepen.io/yusinto">@yusinto</a>) on <a href="https://codepen.io">CodePen</a>.</p>
-<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
-
-Without the custom toJSON() implementation, the code above will use the default
-implementation:
-
-{% highlight json %}
-{"firstName":"Yus","lastName":"Ng"}
+Add the following npm command to your package.json:
+{% highlight bash %}
+"rcp": "NODE_ENV=production relay-compiler-plus --webpackConfig src/server/webpack.config.js --src src",
 {% endhighlight %}
 
-## valueOf()
-Object.prototype has a built-in valueOf method which returns the primitive value
-of the object. You can override this method to return a custom primitive value
-for your object:
-
-<p data-height="372" data-theme-id="dark" data-slug-hash="YaYQyo" data-default-tab="js,result" data-user="yusinto" data-embed-version="2" data-pen-title="Javascript Lessons: valueOf" class="codepen">See the Pen <a href="https://codepen.io/yusinto/pen/YaYQyo/">Javascript Lessons: valueOf</a> by Yusinto Ngadiman (<a href="https://codepen.io/yusinto">@yusinto</a>) on <a href="https://codepen.io">CodePen</a>.</p>
-<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
-
-The override allows us to perform arithmetic with our object. Without the override,
-the valueOf myCar will be NaN (Not-a-Number).
 
 
 ---------------------------------------------------------------------------------------
