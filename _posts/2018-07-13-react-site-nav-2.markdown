@@ -109,18 +109,20 @@ li > span {
 }
 {% endhighlight %}
 
-The end product looks like this:
+## Result
+![Before and after](/assets/images/before-after.png)
 
-And the complete stylesheet looks like this:
+The complete stylesheet:
 
 <script src="https://gist.github.com/yusinto/9a04ad983ff2b03a140683d45ef9405b.js"></script>
 
-
 ## Next steps
-That's it! For more, check out [github](https://github.com/yusinto/ld-react){:target="_blank"}. There is also a fully
-working spa [example](https://github.com/yusinto/ld-react/tree/master/example){:target="_blank"} with react router 4 and
-ssr. 
+There are still loads left to do, like mobile and sizing near edges. I'll get to those in time!
 
-Happy coding!
+For more, check out [github](https://github.com/yusinto/react-site-nav){:target="_blank"}. There are three fully
+working spas including the code in this blog in the [examples](https://github.com/yusinto/react-site-nav/tree/master/examples){:target="_blank"} 
+folder. The code in this blog is under [examples/cra-with-nav](https://github.com/yusinto/react-site-nav/tree/master/examples/cra-with-nav){:target="_blank"}.
+
+Please star it if you like it! Thanks.
 
 ---------------------------------------------------------------------------------------
