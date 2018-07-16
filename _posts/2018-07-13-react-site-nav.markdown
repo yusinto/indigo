@@ -1,6 +1,6 @@
 ---
 published: true
-title: "Building a site nav that doesn't suck"
+title: "Introducing react-site-nav"
 layout: post
 date: 2018-07-13 07:30
 tag:
@@ -21,41 +21,47 @@ tag:
 
 blog: true
 ---
-Let's start with a question: hands up who here wakes up in the morning feeling inspired to go to work and build a nav bar?
-A few hands? Maybe. I predict the majority of us would prefer more exciting stuff like graphql or react-native-dom.
-Building nav bars is sooo boring just because it's been done so many times before! And all the time (or most of the time) very
-badly done as well! It's a vicious cycle. 
 
-No one cares about the nav bar. It's a neglected child. Just use the default bootstrap
-one says one dev. Just build a really quick and simple one that does the job says the product manager. It's always a non-priority
-item in the backlog. Animations? Usability? UX? Somehow we ignore all these things when it comes to the navbar. 
-After all, who cares right?
+[Stripe](https://stripe.com){:target="_blank"} has a beautiful site nav and this package is inspired by that.
+Introducing react-site-nav, a beautifully animated site nav powered by [styled components](https://www.styled-components.com/){:target="_blank"}
+and css animations. Play with the [live demo](https://now-evztwufdfm.now.sh){:target="_blank"} powered by [now](https://zeit.co/now){:target="_blank"}
+or check out the video below.
 
-Well I do. No more crappy nav bars. Introducing [react-site-nav](https://github.com/yusinto/react-site-nav){:target="_blank"},
-a kick ass fully animated fully customisable site nav bar without compromise. Powered by [styled components](https://www.styled-components.com/){:target="_blank"},
-css grid and animations and inspired by [stripe.com](https://stripe.com){:target="_blank"}.
+<p align="center">
+{% youtube 4fThkT_vlBE %}
+</p>
 
-##
+## Goal
+Let's use react-site-nav and add a kick ass nav to create-react-app!
 
 ## Step 1: Install
 
-You need react ^16.4 to use ld-react.
+We'll create a new create-react-app project and install react-site-nav the usual way:
 
 {% highlight bash %}
-yarn add ld-react
+create-react-app cra-with-nav
+cd cra-with-nav
+yarn add react-site-nav
 {% endhighlight %}
 
-## Step 2: Wrap your root app withFlagProvider
+## Step 2: Adding SiteNav and ContentGroup
 
-The withFlagProvider hoc initialises an ldClient object on componentDidMount and sets up subscriptions to all flags.
-It then uses the context api to pass flag values to consumers. 
+Good stuff. Now we are going to add two components from react-site-nav to App.js: SiteNav and ContentGroup.
 
-<script src="https://gist.github.com/yusinto/a31074588c26c2ce747505bcbd49400b.js"></script>
+<script src="https://gist.github.com/yusinto/c53edbc178d9dd3289c1a80050e9f20f.js"></script>
 
-You can also pass a user object and options as part of the second parameter in addition to clientSideId. However, they are
-not mandatory.
- 
-## Step 3: Where you need flags, wrap that component withFlags
+SiteNav is the root react component that contains ContentGroup children.
+Each ContentGroup can accept 3 props: title, width and height.
+
+<p align="center">
+<img src="/assets/images/react-site-nav-content-group.png" width="400"/>
+</p>
+
+
+## Step 3: Making it pretty
+
+As you can see, it's easy to get up and going, but it looks pretty ordinary. Let's make it
+look better!
 
 The withFlags hoc sets up a context consumer which passes flags to the wrapped component. Your flags will then be
 available as camelCased keys under `this.props.flags.yourFeatureFlag`. 
