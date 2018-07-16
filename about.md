@@ -6,11 +6,15 @@ permalink: /about/index.html
 ![Profile Image]({{ site.url }}/{{ site.picture }})
 
 <h2>Who am I?</h2>
-<p>Hello, my name is Yusinto Ngadiman and I'm a coding addict, specifically react. I come from a .NET
-background and I did angular for a while. However, sometime ago I started doing react and I never look back. The
-react/redux/react router/relay ecosystem have really changed front end development as I know it.
+<p>Hello, my name is Yusinto Ngadiman and I'm a coding addict. My react journey started in 2015 with react v0.11
+and since then I have released 3 production react websites and 2 of them with graphql. My journey has taken me
+to React Paris 2017 and 2018, the graphql conference in sf in 2017 and it's still going!
 </p>
 <p>
-It is now so easy to develop performant single page apps with server side rendering and modularisation. Most importantly,
-it has brought back the fun in front end development.
+I love open source, it's my life! My wife has a different view of it. Check out my <a href="https://github.com/yusinto" target="_blank">github page</a>
+and star my repos if you use/like them!
+</p>
+<p>
+I am available for freelance work. If you are in need for react developers
+please <a href="mailto:yusinto@gmail.com">email me</a> to have a friendly chat.
 </p>
