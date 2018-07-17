@@ -14,8 +14,8 @@ tag:
 blog: true
 ---
 ###_Update: 22 October 2016_
-_I have published an npm package called [ld-redux](https://github.com/yusinto/ld-redux){:target="_blank"} which covers everything you need to integrate launch darkly with your react 
-redux app. It's the contents of this blog in an npm package. If you use it, please give me some feedback. Thanks!_ 
+_I have published an npm package called [ld-redux](https://github.com/yusinto/ld-redux){:target="_blank"} which covers everything you need to integrate launch darkly with your react
+redux app. It's the contents of this blog in an npm package. If you use it, please give me some feedback. Thanks!_
 
 ---
 
@@ -23,24 +23,26 @@ I first heard the term feature toggle from someone I interviewed when we were ta
 I didn't really think much of it at first, thinking that it's just a trivial bunch of if-else flags that I have to maintain
 manually. I couldn't be more wrong.
 
-Maintaining feature flags in your codebase can become messy very quickly. On top of that you need to build targeting and analytics tools that 
+Maintaining feature flags in your codebase can become messy very quickly. On top of that you need to build targeting and analytics tools that
 the business will (eventually) want. I soon realise that feature toggle is a distinct and separate supporting domain of my core domain. Much like identity and
 access management. So is there anything existing out there we can use to integrate with our core domain?
 
 Enter Launch Darkly. I met Edith Harbaugh the CEO of Launch Darkly at NDC Sydney 2016. She was kind enough to give a demo of launch darkly in situ and I was blown away.
-Launch darkly stores feature flags without coupling to the UI, so it works with React or any modern javascript framework with virtual dom reconciliation. 
-The sdk supports almost every imaginable platform, but most importantly it's on [npm](https://www.npmjs.com/package/ldclient-js){:target="_blank"} and 
-open source on [github](https://github.com/launchdarkly/js-client){:target="_blank"}. 
+Launch darkly stores feature flags without coupling to the UI, so it works with React or any modern javascript framework with virtual dom reconciliation.
+The sdk supports almost every imaginable platform, but most importantly it's on [npm](https://www.npmjs.com/package/ldclient-js){:target="_blank"} and
+open source on [github](https://github.com/launchdarkly/js-client){:target="_blank"}.
 
 In this blog I will walk through step by step how to integrate launch darkly feature toggles with your react react-router redux app.
 Note that this blog assumes prior working knowledge of redux and redux-thunk.
- 
+
 ## The end game
 By the end of this blog, we will have a feature-flag driven react redux app using Launch Darkly as our feature toggle provider.
 
 ## Step 1: Configure launch darkly dashboard
 
+<p align="center">
 {% youtube _WDy_V0h-qk %}
+</p>
 
 ## Step 2: Install ldclient-js
 {% highlight bash %}
@@ -49,8 +51,8 @@ npm i ldclient-js --save
 
 ## Step 3: Create redux action and reducer to instantiate ldclient
 We need to instantiate the ldclient in order to communicate with launch darkly. This instantiation
-should be done once at the start of the app, and the resultant client object stored in redux state to be 
-re-used throughout the app. 
+should be done once at the start of the app, and the resultant client object stored in redux state to be
+re-used throughout the app.
 
 We'll go ahead and create the action and reducer to perform this instantiation.
 
@@ -78,7 +80,7 @@ export const initialiseLD = () => {
      * http://docs.launchdarkly.com/docs/js-sdk-reference#users
     */
     const user = {
-      // key is MANDATORY! You can use guid for anonymous users 
+      // key is MANDATORY! You can use guid for anonymous users
       "key": "deadbeef",
       "firstName": "John",
       "lastName": "Carmack",
@@ -127,9 +129,9 @@ const defaultState = {
 export default function App(state = defaultState, action) {
   switch (action.type) {
     case Constants.LD_READY:
-      return Object.assign({}, state, 
+      return Object.assign({}, state,
         {
-            isLDReady: true, 
+            isLDReady: true,
             ldClient: action.data
         });
 
@@ -141,7 +143,7 @@ export default function App(state = defaultState, action) {
 
 ## Step 4: Invoke initialiseLD on componentDidMount
 We want to initialise the client just once at the start of the app. The
-best place to do this is at the root component's componentDidMount. 
+best place to do this is at the root component's componentDidMount.
 
 I'll skip the appContainer snippet to keep things short.
 
@@ -162,9 +164,9 @@ export default class App extends Component {
 {% endhighlight %}
 
 ## Step 5. Fetching feature flags
-This is the jist of the entire blog so pay attention! Now we have the 
-client initialised, we can fetch our flags! Each component which uses 
-feature flagging must subscribe to the isLDReady app state above. 
+This is the jist of the entire blog so pay attention! Now we have the
+client initialised, we can fetch our flags! Each component which uses
+feature flagging must subscribe to the isLDReady app state above.
 This is pretty standard in redux, and you can do this like so:
 
 ####homeContainer.js
@@ -212,15 +214,15 @@ export default class Home extends Component {
 }
 {% endhighlight %}
 
-<b><i>initialiseHomeFLags</i></b> is the interesting bit here. The way you 
+<b><i>initialiseHomeFLags</i></b> is the interesting bit here. The way you
  retrieve flags from launch darkly is through the "variation" method. You
- pass the feature flag key (which you set up in the dashboard) along with 
- a default, just in case the call failed or if 
+ pass the feature flag key (which you set up in the dashboard) along with
+ a default, just in case the call failed or if
  the flag doesn't exist. That means you need to store all your feature
- flag keys somewhere in the app so it can be shared across actions and reducers. 
- I store it in a "logic" file specific to the component, so I can have 
+ flag keys somewhere in the app so it can be shared across actions and reducers.
+ I store it in a "logic" file specific to the component, so I can have
  a clean separation of concerns between actions and business logic.
- 
+
 ####homeLogic.js
 {% highlight c# %}
 export const homeFlags = {
@@ -233,9 +235,9 @@ export const homeFlags = {
 ...
 const defaultState = {
   randomNumber: 0,
-  
+
   // store home flags in component state
-  ...homeFlags 
+  ...homeFlags
 };
 
 export default function App(state = defaultState, action) {
@@ -279,7 +281,7 @@ export const initialiseHomeFlags = () => {
 
     dispatch(setHomeFlags(flags));
   };
-  
+
   const setHomeFlags = flags => {
     return {
       type: Constants.SET_HOME_FLAGS,
@@ -293,8 +295,8 @@ export const initialiseHomeFlags = () => {
 <b>EXTRA!!</b> Launch darkly provides support for realtime feature flag change
 propagation using Server Sent Events (SSE, which is a html5 thing). This is like
 websockets but it's a one way connection from the server to client to allow
- for push notifications. This is super cool! That means the client can 
- see feature flag changes from the dashboard in realtime without having to 
+ for push notifications. This is super cool! That means the client can
+ see feature flag changes from the dashboard in realtime without having to
  refresh the browser!
  <p>
  The way you subscribe to this is by using the "on" event on the client object,
@@ -304,7 +306,7 @@ websockets but it's a one way connection from the server to client to allow
  </p>
 
 ## Step 6: Use feature flags
-This is the most fun and easy part! 
+This is the most fun and easy part!
 
 ####homeComponent.js
 {% highlight c# %}
@@ -316,14 +318,14 @@ export default class Home extends Component {
       return (
         <div>
           <p>
-            Welcome to the homepage! The random number feature below is 
+            Welcome to the homepage! The random number feature below is
             feature toggled.
           </p>
           {
             // feature toggle!
             this.props['random-number'] ?
               <div>
-                <button onClick={this.onClickGenerateRandom}>Generate 
+                <button onClick={this.onClickGenerateRandom}>Generate
                 random number</button>
                 <p>{this.props.randomNumber}</p>
               </div>
@@ -339,7 +341,7 @@ export default class Home extends Component {
 
 Your feature flags will be available to you as props because it's hydrated
 by actions in the state. The only gotcha here is that you need to access
-the feature flags using the brackets notation i.e. this.props.['feature-flag-key'] 
+the feature flags using the brackets notation i.e. this.props.['feature-flag-key']
 instead of the standard dot notation. This is because keys can contain
  spaces when created in the dashboard and spaces are replaced by dashes
  automatically by launch darkly. Since dashes are not allowed when using

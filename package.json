@@ -22,11 +22,13 @@
     "gulp-plumber": "^1.0.1",
     "gulp-stylus": "^2.2.0",
     "nib": "^1.1.0",
+    "rimraf": "^2.6.2",
     "rupture": "^0.6.1"
   },
   "scripts": {
     "build": "bundle exec jekyll build",
-    "test": "bundle exec htmlproof ./_site"
+    "test": "bundle exec htmlproof ./_site",
+    "deploy": "cp -R _site/* ../yusinto.github.io"
   },
   "dependencies": {
     "flow-bin": "^0.37.4",
