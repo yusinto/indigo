@@ -22,9 +22,9 @@ tag:
 blog: true
 ---
 
-[Stripe](https://stripe.com){:target="_blank"} has a beautiful site nav and this package is inspired by that.
-Introducing react-site-nav, a beautifully animated site nav powered by [styled components](https://www.styled-components.com/){:target="_blank"}
-and css animations. Play with the [live demo](https://now-evztwufdfm.now.sh){:target="_blank"} powered by [now](https://zeit.co/now){:target="_blank"}
+Stripe has a beautiful site nav and this package is inspired by that.
+Introducing react-site-nav, a beautifully animated site nav powered by styled components
+and css animations. Play with the [live demo](https://now-evztwufdfm.now.sh){:target="_blank"} powered by now
 or check out the video below.
 
 <p align="center">
@@ -60,18 +60,73 @@ Each ContentGroup can accept 3 props: title, width and height.
 
 ## Step 3: Making it pretty
 
-As you can see, it's easy to get up and going, but it looks pretty ordinary. Let's make it
-look better!
+It takes only a few lines of code to get up and going, but it still looks very basic.
+Let's make it pretty! First, set our SiteNav to debug mode so the content group stays open
+when we hover over it:
 
-The withFlags hoc sets up a context consumer which passes flags to the wrapped component. Your flags will then be
-available as camelCased keys under `this.props.flags.yourFeatureFlag`. 
+{% highlight javascript %}
+<SiteNav debug={true}>
+{% endhighlight %}
 
-<script src="https://gist.github.com/yusinto/195df27bbba1044c3773a9c4a86db057.js"></script>
+Let's get rid of those ugly default list style, margin and padding:
 
-That's it! For more, check out [github](https://github.com/yusinto/ld-react){:target="_blank"}. There is also a fully
-working spa [example](https://github.com/yusinto/ld-react/tree/master/example){:target="_blank"} with react router 4 and
-ssr. 
+{% highlight css %}
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+{% endhighlight %}
 
-Happy coding!
+Next instead of a bullet point, let's have an image next to our text. Our jsx becomes:
+
+<script src="https://gist.github.com/yusinto/840ecdba5ce0d8f4bf85fa11ae2a4e51.js"></script>
+
+Let's use flex for our list item so we can easily center everything:
+
+{% highlight css %}
+li {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 60px;
+}
+{% endhighlight %}
+
+It's starting to look good! Just some finishing touches now to make the images and text vertically
+aligned and some hover effects:
+
+{% highlight css %}
+li:hover {
+    opacity: 0.7;
+}
+
+li > span {
+    flex: 0 0 100px;
+    text-align: left;
+    margin-left: 10px;
+}
+{% endhighlight %}
+
+## Tadaa
+![Before and after](/assets/images/before-after.png)
+
+Check out the live demo [here](https://build-licattzisr.now.sh/){:target="_blank"}. The complete stylesheet:
+
+<script src="https://gist.github.com/yusinto/9a04ad983ff2b03a140683d45ef9405b.js"></script>
+
+## Next steps
+There are still loads left to do, like mobile and sizing near edges. I'll get to those in time!
+
+For more, check out [github](https://github.com/yusinto/react-site-nav){:target="_blank"}. There are three fully
+working spas including the code in this blog in the [examples](https://github.com/yusinto/react-site-nav/tree/master/examples){:target="_blank"}
+folder. The code in this blog is under [examples/cra-with-nav](https://github.com/yusinto/react-site-nav/tree/master/examples/cra-with-nav){:target="_blank"}.
+
+Please star it if you like it! Thanks.
+
+## Thanks
+[Max Stoiber](https://mxstbr.com/){:target="_blank"} is awesome.
+[Styled components](https://www.styled-components.com/){:target="_blank"} is awesome.
+[Now](https://zeit.co/now){:target="_blank"} is awesome. Thanks.
 
 ---------------------------------------------------------------------------------------
