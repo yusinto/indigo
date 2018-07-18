@@ -111,7 +111,7 @@ li > span {
 ## Tadaa
 ![Before and after](/assets/images/before-after.png)
 
-Check out the live demo [here](https://build-licattzisr.now.sh/){:target="_blank"}. The complete stylesheet:
+Check out the live demo [here](https://build-yzcyfqkxqz.now.sh){:target="_blank"}. The complete stylesheet:
 
 <script src="https://gist.github.com/yusinto/9a04ad983ff2b03a140683d45ef9405b.js"></script>
 
