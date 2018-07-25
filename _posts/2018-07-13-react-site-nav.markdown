@@ -24,7 +24,7 @@ blog: true
 
 Stripe has a beautiful site nav and this package is inspired by that.
 Introducing react-site-nav, a beautifully animated site nav powered by styled components
-and css animations. Play with the [live demo](https://now-evztwufdfm.now.sh){:target="_blank"} powered by now
+and css animations. Play with the [live demo](https://react-site-nav.now.sh){:target="_blank"} powered by now
 or check out the video below.
 
 <p align="center">
