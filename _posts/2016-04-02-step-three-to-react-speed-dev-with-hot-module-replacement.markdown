@@ -1,6 +1,6 @@
 ---
 published: true
-title: "Step 3 to React: Speed dev with hot module replacement"
+title: "Step 3 to React - Speed dev with hot module replacement"
 layout: post
 date: 2016-04-2 17:45
 tag:

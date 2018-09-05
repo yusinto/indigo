@@ -1,6 +1,6 @@
 ---
 published: true
-title: "Step 4 to React: Intro to routing with react router"
+title: "Step 4 to React - Intro to routing with react router"
 layout: post
 date: 2016-06-30 14:52
 tag:

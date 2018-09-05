@@ -1,6 +1,6 @@
 ---
 published: true
-title: "Step 2 to React: Webpack and React"
+title: "Step 2 to React - Webpack and React"
 layout: post
 date: 2016-03-30 21:25
 tag:
