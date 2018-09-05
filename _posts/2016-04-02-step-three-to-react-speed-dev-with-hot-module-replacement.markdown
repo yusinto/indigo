@@ -2,7 +2,7 @@
 published: true
 title: "Step 3 to React - Speed dev with hot module replacement"
 layout: post
-date: 2016-04-2 17:45
+date: 2016-04-02 17:45
 tag:
 - react
 - hmr

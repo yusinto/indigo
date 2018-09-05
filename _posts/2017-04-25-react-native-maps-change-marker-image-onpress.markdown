@@ -146,7 +146,7 @@ react-native run-ios
 You should see a map view with the user location set to Cafe Sydney in Australia.
 Now let's add a few markers.
 
-{% highlight js%}
+{% highlight js %}
 // Add these at the top of the file, straight after the imports
 const RESTAURANTS = [
   {
@@ -214,7 +214,7 @@ marker and save that to state. Then on the image prop, we can inspect
 if the marker being rendered matches the selected index in state, and use
 a different image if so.
 
-{% highlight js%}
+{% highlight js %}
 // At the top of the file after imports, we require our marker images
 const marker = require('./assets/images/marker.png');
 const selectedMarker = require('./assets/images/marker-selected.png');

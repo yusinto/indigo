@@ -2,7 +2,7 @@
 published: true
 title: "Targeting users with React Redux and Launch Darkly"
 layout: post
-date: 2016-11-1 19:30
+date: 2016-11-01 19:30
 tag:
 - targeting
 - users
